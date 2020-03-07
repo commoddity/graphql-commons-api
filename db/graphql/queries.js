@@ -1,10 +1,9 @@
 const graphql = require('graphql');
+const joinMonster = require('join-monster');
+
 const { GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLInt } = graphql;
 
 const { db } = require('../../pgAdaptor');
-
-const joinMonster = require('join-monster');
-
 const {
   ParliamentarySessionType,
   BillType,

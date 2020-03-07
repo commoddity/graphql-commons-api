@@ -1,3 +1,6 @@
+const graphql = require('graphql');
+const graphqldate = require('graphql-iso-date');
+
 const {
   GraphQLObjectType,
   GraphQLList,
@@ -5,11 +8,10 @@ const {
   GraphQLString,
   GraphQLInt,
   GraphQLBoolean
-} = require('graphql');
+} = graphql;
+const { GraphQLDate, GraphQLDateTime } = graphqldate;
 
-const { GraphQLDate, GraphQLDateTime } = require('graphql-iso-date');
-
-//GraphQL tables are defined below
+//GraphQL types are defined below
 
 // Parliamentary Sessions
 const ParliamentarySessionType = new GraphQLObjectType({

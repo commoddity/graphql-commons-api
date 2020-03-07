@@ -1,4 +1,6 @@
 const graphql = require('graphql');
+const graphqldate = require('graphql-iso-date');
+
 const {
   GraphQLObjectType,
   GraphQLNonNull,
@@ -6,11 +8,9 @@ const {
   GraphQLString,
   GraphQLBoolean
 } = graphql;
-const graphqldate = require('graphql-iso-date');
 const { GraphQLDate, GraphQLDateTime } = graphqldate;
 
-const db = require('../../pgAdaptor').db;
-
+const { db } = require('../../pgAdaptor');
 const {
   ParliamentarySessionType,
   BillType,

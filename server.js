@@ -12,6 +12,7 @@ const schema = new GraphQLSchema({
   mutation
 });
 
+// Define port to run server on
 const PORT = 4000;
 
 // Create an express server and a GraphQL endpoint
@@ -25,7 +26,7 @@ app.use(
   })
 );
 
-//
+// Server launch code
 app.listen(PORT, () =>
   console.log(
     `Commons App Express GraphQL server now running on localhost:${PORT}/api`
