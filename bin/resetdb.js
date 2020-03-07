@@ -7,18 +7,16 @@ const chalk = require('chalk');
 const Client = require('pg-native');
 
 // PG connection setup
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgres://commoddity:development@localhost:5432/commons_rebuild';
+const connectionString = `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@localhost:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`;
 const client = new Client();
 
 // Loads the schema files from db/schema
 const runSchemaFiles = function() {
   console.log(chalk.cyan(`-> Loading Schema Files ...`));
-  const schemaFilenames = fs.readdirSync('./db/schema');
+  const schemaFilenames = fs.readdirSync('./db/psql/schema');
 
   for (const fn of schemaFilenames) {
-    const sql = fs.readFileSync(`./db/schema/${fn}`, 'utf8');
+    const sql = fs.readFileSync(`./db/psql/schema/${fn}`, 'utf8');
     console.log(`\t-> Running ${chalk.green(fn)}`);
     client.querySync(sql);
   }
@@ -26,10 +24,10 @@ const runSchemaFiles = function() {
 
 const runSeedFiles = function() {
   console.log(chalk.cyan(`-> Loading Seeds ...`));
-  const schemaFilenames = fs.readdirSync('./db/seeds');
+  const schemaFilenames = fs.readdirSync('./db/psql/seeds');
 
   for (const fn of schemaFilenames) {
-    const sql = fs.readFileSync(`./db/seeds/${fn}`, 'utf8');
+    const sql = fs.readFileSync(`./db/psql/seeds/${fn}`, 'utf8');
     console.log(`\t-> Running ${chalk.green(fn)}`);
     client.querySync(sql);
   }

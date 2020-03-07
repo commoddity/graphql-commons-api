@@ -1,7 +1,16 @@
+const graphql = require('graphql');
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
+
 //Import schema information from graphql folder
-const { schema } = require('./db/graphql/schema.js');
+const { GraphQLSchema } = graphql;
+const { query } = require('./db/graphql/queries');
+const { mutation } = require('./db/graphql/mutations');
+
+const schema = new GraphQLSchema({
+  query,
+  mutation
+});
 
 const PORT = 4000;
 

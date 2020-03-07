@@ -6,7 +6,7 @@ CREATE TABLE users (
   last_name VARCHAR (255) NOT NULL,
   password VARCHAR (255) NOT NULL,
   email VARCHAR (255) NOT NULL,
-  phone_number BIGINT NOT NULL,
+  phone_number BIGINT,
   postal_code VARCHAR (255),
   email_notification VARCHAR (25),
   sms_notification VARCHAR (25),
