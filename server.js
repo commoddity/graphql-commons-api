@@ -1,24 +1,24 @@
 const express = require('express');
-const express_graphql = require('express-graphql');
-const { buildSchema } = require('graphql');
+const graphqlHTTP = require('express-graphql');
+const graphql = require('graphql');
 
-// GraphQL schema
-const schema = buildSchema(`
-    type Query {
-        message: String
+const QueryRoot = new graphql.GraphQLObjectType({
+  name: 'Query',
+  fields: () => ({
+    hello: {
+      type: graphql.GraphQLString,
+      resolve: () => 'Hello world!'
     }
-`);
+  })
+});
 
-// Root resolver
-const root = {
-  message: () => 'Hello World!'
-};
+const schema = new graphql.GraphQLSchema({ query: QueryRoot });
 
 // Create an express server and a GraphQL endpoint
 const app = express();
 app.use(
-  '/graphql',
-  express_graphql({
+  '/api',
+  graphqlHTTP({
     schema: schema,
     rootValue: root,
     graphiql: true
