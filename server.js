@@ -1,30 +1,34 @@
+const graphql = require('graphql');
 const express = require('express');
-const express_graphql = require('express-graphql');
-const { buildSchema } = require('graphql');
+const graphqlHTTP = require('express-graphql');
 
-// GraphQL schema
-const schema = buildSchema(`
-    type Query {
-        message: String
-    }
-`);
+//Import schema information from graphql folder
+const { GraphQLSchema } = graphql;
+const { query } = require('./db/graphql/queries');
+const { mutation } = require('./db/graphql/mutations');
 
-// Root resolver
-const root = {
-  message: () => 'Hello World!'
-};
+const schema = new GraphQLSchema({
+  query,
+  mutation
+});
+
+// Define port to run server on
+const PORT = 4000;
 
 // Create an express server and a GraphQL endpoint
 const app = express();
 app.use(
-  '/graphql',
-  express_graphql({
+  '/api',
+  graphqlHTTP({
     schema: schema,
-    rootValue: root,
+    rootValue: global,
     graphiql: true
   })
 );
 
-app.listen(4000, () =>
-  console.log('Express GraphQL Server Now Running On localhost:4000/graphql')
+// Server launch code
+app.listen(PORT, () =>
+  console.log(
+    `Commons App Express GraphQL server now running on localhost:${PORT}/api`
+  )
 );
