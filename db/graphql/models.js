@@ -1,15 +1,26 @@
-const graphql = require('graphql');
-const graphqldate = require('graphql-iso-date');
+const {
+  GraphQLObjectType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+  GraphQLInt,
+  GraphQLBoolean
+} = require('graphql');
 
-const ParliamentarySession = new graphql.GraphQLObjectType({
+const { GraphQLDate, GraphQLDateTime } = require('graphql-iso-date');
+
+//GraphQL tables are defined below
+
+// Parliamentary Sessions
+const ParliamentarySession = new GraphQLObjectType({
   name: 'ParliamentarySession',
   fields: () => ({
-    id: { type: graphql.GraphQLInt },
-    number: { type: graphql.GraphQLString },
-    start_date: { type: graphqldate.GraphQLDate },
-    end_date: { type: graphqldate.GraphQLDate },
+    id: { type: GraphQLNonNull(GraphQLInt) },
+    number: { type: GraphQLNonNull(GraphQLString) },
+    start_date: { type: GraphQLDate },
+    end_date: { type: GraphQLDate },
     bills: {
-      type: graphql.GraphQLList(Bill),
+      type: GraphQLList(Bill),
       sqlJoin: (billTable, parliamentarySessionTable, args) =>
         `${billTable}.parliamentary_session_id = ${parliamentarySessionTable}.id`
     }
@@ -21,36 +32,37 @@ ParliamentarySession._typeConfig = {
   uniqueKey: 'id'
 };
 
-const Bill = new graphql.GraphQLObjectType({
+// Bills
+const Bill = new GraphQLObjectType({
   name: 'Bill',
   fields: () => ({
-    id: { type: graphql.GraphQLInt },
+    id: { type: GraphQLNonNull(GraphQLInt) },
     parliamentary_session: {
       type: ParliamentarySession,
       sqlJoin: (billTable, parliamentarySessionTable, args) =>
         `${billTable}.parliamentary_session_id = ${parliamentarySessionTable}.id`
     },
-    code: { type: graphql.GraphQLString },
-    title: { type: graphql.GraphQLString },
-    description: { type: graphql.GraphQLString },
-    introduced_date: { type: graphqldate.GraphQLDate },
-    summary_url: { type: graphql.GraphQLString },
-    page_url: { type: graphql.GraphQLString },
-    full_text_url: { type: graphql.GraphQLString },
-    passed: { type: graphql.GraphQLBoolean },
-    created_at: { type: graphqldate.GraphQLDateTime },
+    code: { type: GraphQLNonNull(GraphQLString) },
+    title: { type: GraphQLNonNull(GraphQLString) },
+    description: { type: GraphQLNonNull(GraphQLString) },
+    introduced_date: { type: GraphQLDate },
+    summary_url: { type: GraphQLString },
+    page_url: { type: GraphQLString },
+    full_text_url: { type: GraphQLString },
+    passed: { type: GraphQLBoolean },
+    created_at: { type: GraphQLDateTime },
     events: {
-      type: graphql.GraphQLList(Event),
+      type: GraphQLList(Event),
       sqlJoin: (billTable, eventTable, args) =>
         `${billTable}.id = ${eventTable}.bill_id`
     },
     categories: {
-      type: graphql.GraphQLList(Category),
+      type: GraphQLList(Category),
       sqlJoin: (billTable, categoryTable, args) =>
         `${billTable}.id = ${categoryTable}.bill_id`
     },
     users: {
-      type: graphql.GraphQLList(User),
+      type: GraphQLList(User),
       sqlJoin: (billTable, userTable, args) =>
         `${billTable}.id = ${userTable}.bill_id`
     }
@@ -62,19 +74,20 @@ Bill._typeConfig = {
   uniqueKey: 'id'
 };
 
-const Event = new graphql.GraphQLObjectType({
+// Events
+const Event = new GraphQLObjectType({
   name: 'Event',
   fields: () => ({
-    id: { type: graphql.GraphQLInt },
+    id: { type: GraphQLNonNull(GraphQLInt) },
     bill_id: {
       type: Bill,
       sqlJoin: (eventTable, billTable, args) =>
         `${eventTable}.bill_id = ${billTable}.id`
     },
-    code: { type: graphql.GraphQLString },
-    title: { type: graphql.GraphQLString },
-    publication_date: { type: graphqldate.GraphQLDate },
-    created_at: { type: graphqldate.GraphQLDateTime }
+    code: { type: GraphQLNonNull(GraphQLString) },
+    title: { type: GraphQLNonNull(GraphQLString) },
+    publication_date: { type: GraphQLDate },
+    created_at: { type: GraphQLDateTime }
   })
 });
 
@@ -83,20 +96,21 @@ Event._typeConfig = {
   uniqueKey: 'id'
 };
 
-const Category = new graphql.GraphQLObjectType({
+// Categories
+const Category = new GraphQLObjectType({
   name: 'Category',
   fields: () => ({
-    id: { type: graphql.GraphQLInt },
-    name: { type: graphql.GraphQLString },
-    uclassify_class: { type: graphql.GraphQLString },
-    created_at: { type: graphqldate.GraphQLDateTime },
+    id: { type: GraphQLNonNull(GraphQLInt) },
+    name: { type: GraphQLString },
+    uclassify_class: { type: GraphQLString },
+    created_at: { type: GraphQLDateTime },
     users: {
-      type: graphql.GraphQLList(User),
+      type: GraphQLList(User),
       sqlJoin: (categoryTable, userTable, args) =>
         `${categoryTable}.id = ${userTable}.category_id`
     },
     bills: {
-      type: graphql.GraphQLList(Bill),
+      type: GraphQLList(Bill),
       sqlJoin: (categoryTable, billTable, args) =>
         `${categoryTable}.id = ${billTable}.category_id`
     }
@@ -108,26 +122,27 @@ Category._typeConfig = {
   uniqueKey: 'id'
 };
 
-const User = new graphql.GraphQLObjectType({
+// Users
+const User = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
-    id: { type: graphql.GraphQLInt },
-    first_name: { type: graphql.GraphQLString },
-    last_name: { type: graphql.GraphQLString },
-    password: { type: graphql.GraphQLString },
-    email: { type: graphql.GraphQLString },
-    phone_number: { type: graphql.GraphQLInt },
-    email_notification: { type: graphql.GraphQLString },
-    sms_notification: { type: graphql.GraphQLString },
-    active: { type: graphql.GraphQLBoolean },
-    created_at: { type: graphqldate.GraphQLDateTime },
+    id: { type: GraphQLNonNull(GraphQLInt) },
+    first_name: { type: GraphQLString },
+    last_name: { type: GraphQLString },
+    password: { type: GraphQLString },
+    email: { type: GraphQLString },
+    phone_number: { type: GraphQLInt },
+    email_notification: { type: GraphQLString },
+    sms_notification: { type: GraphQLString },
+    active: { type: GraphQLBoolean },
+    created_at: { type: GraphQLDateTime },
     bills: {
-      type: graphql.GraphQLList(Bill),
+      type: GraphQLList(Bill),
       sqlJoin: (userTable, billTable, args) =>
         `${userTable}.id = ${billTable}.user_id`
     },
     categories: {
-      type: graphql.GraphQLList(Category),
+      type: GraphQLList(Category),
       sqlJoin: (userTable, categoryTable, args) =>
         `${userTable}.id = ${categoryTable}.user_id`
     }

@@ -1,7 +1,9 @@
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
-
+//Import schema information from graphql folder
 const { schema } = require('./db/graphql/schema.js');
+
+const PORT = 4000;
 
 // Create an express server and a GraphQL endpoint
 const app = express();
@@ -14,6 +16,9 @@ app.use(
   })
 );
 
-app.listen(4000, () =>
-  console.log('Express GraphQL Server Now Running On localhost:4000/graphql')
+//
+app.listen(PORT, () =>
+  console.log(
+    `Commons App Express GraphQL server now running on localhost:${PORT}/api`
+  )
 );
