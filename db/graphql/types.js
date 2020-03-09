@@ -41,21 +41,25 @@ const BillType = new GraphQLObjectType({
   name: 'Bill',
   type: 'Query',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
+    id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
     parliamentary_session: {
       type: ParliamentarySessionType,
+      sqlColumn: 'parliamentary_session_id',
       sqlJoin: (billTable, parliamentarySessionTable, args) =>
         `${billTable}.parliamentary_session_id = ${parliamentarySessionTable}.id`
     },
-    code: { type: GraphQLNonNull(GraphQLString) },
-    title: { type: GraphQLNonNull(GraphQLString) },
-    description: { type: GraphQLNonNull(GraphQLString) },
-    introduced_date: { type: GraphQLDate },
-    summary_url: { type: GraphQLString },
-    page_url: { type: GraphQLString },
-    full_text_url: { type: GraphQLString },
-    passed: { type: GraphQLBoolean },
-    created_at: { type: GraphQLDateTime },
+    code: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'code' },
+    title: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'title' },
+    description: {
+      type: GraphQLNonNull(GraphQLString),
+      sqlColumn: 'description'
+    },
+    introduced_date: { type: GraphQLDate, sqlColumn: 'introduced_date' },
+    summary_url: { type: GraphQLString, sqlColumn: 'summary_url' },
+    page_url: { type: GraphQLString, sqlColumn: 'page_url' },
+    full_text_url: { type: GraphQLString, sqlColumn: 'full_text_url' },
+    passed: { type: GraphQLBoolean, sqlColumn: 'passed' },
+    created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' },
     events: {
       description: 'Events related this this bill',
       type: GraphQLList(EventType),
@@ -101,16 +105,16 @@ const EventType = new GraphQLObjectType({
   name: 'Event',
   type: 'Query',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
+    id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
     bill_id: {
       type: BillType,
       sqlJoin: (eventTable, billTable, args) =>
         `${eventTable}.bill_id = ${billTable}.id`
     },
-    code: { type: GraphQLNonNull(GraphQLString) },
-    title: { type: GraphQLNonNull(GraphQLString) },
-    publication_date: { type: GraphQLDate },
-    created_at: { type: GraphQLDateTime }
+    code: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'code' },
+    title: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'title' },
+    publication_date: { type: GraphQLDate, sqlColumn: 'publication_date' },
+    created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' }
   })
 });
 
@@ -124,10 +128,10 @@ const CategoryType = new GraphQLObjectType({
   name: 'Category',
   type: 'Query',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
-    name: { type: GraphQLString },
-    uclassify_class: { type: GraphQLString },
-    created_at: { type: GraphQLDateTime },
+    id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
+    name: { type: GraphQLString, sqlColumn: 'name' },
+    uclassify_class: { type: GraphQLString, sqlColumn: 'uclassify_class' },
+    created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' },
     users: {
       description: 'Users following this category',
       type: new GraphQLList(UserType),
@@ -167,17 +171,23 @@ const UserType = new GraphQLObjectType({
   name: 'User',
   type: 'Query',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
-    first_name: { type: GraphQLNonNull(GraphQLString) },
-    last_name: { type: GraphQLNonNull(GraphQLString) },
-    username: { type: GraphQLNonNull(GraphQLString) },
-    password: { type: GraphQLNonNull(GraphQLString) },
-    email: { type: GraphQLNonNull(GraphQLString) },
-    phone_number: { type: GraphQLInt },
-    email_notification: { type: GraphQLString },
-    sms_notification: { type: GraphQLString },
-    active: { type: GraphQLBoolean },
-    created_at: { type: GraphQLDateTime },
+    id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
+    first_name: {
+      type: GraphQLNonNull(GraphQLString),
+      sqlColumn: 'first_name'
+    },
+    last_name: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'last_name' },
+    username: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'username' },
+    password: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'password' },
+    email: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'email' },
+    phone_number: { type: GraphQLInt, sqlColumn: 'phone_number' },
+    email_notification: {
+      type: GraphQLString,
+      sqlColumn: 'email_notification'
+    },
+    sms_notification: { type: GraphQLString, sqlColumn: 'sms_notification' },
+    active: { type: GraphQLBoolean, sqlColumn: 'active' },
+    created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' },
     bills: {
       description: 'Bills followed by this user',
       type: new GraphQLList(BillType),

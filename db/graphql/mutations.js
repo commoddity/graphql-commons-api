@@ -22,7 +22,10 @@ const {
   ParliamentarySessionType,
   BillType,
   EventType,
-  UserType
+  UserType,
+  BillCategoryType,
+  UserBillType,
+  UserCategoryType
 } = require('./types');
 
 // MutationRoot stores mutations for creating/updating data in the database

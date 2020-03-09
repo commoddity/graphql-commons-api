@@ -78,11 +78,12 @@ const schema = new GraphQLSchema({
 // Create a GraphQL endpoint
 const server = new ApolloServer({
   schema,
-  graphiql: environment.match('development') ? true : false,
+  playground: environment.match('development') ? true : false,
   context: ({ req, res }) => buildContext({ req, res })
 });
+const path = '/api';
 
-server.applyMiddleware({ app });
+server.applyMiddleware({ app, path });
 
 // Server launch code
 app.listen(serverConf.SERVER_PORT, () =>
