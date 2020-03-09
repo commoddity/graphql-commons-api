@@ -31,7 +31,7 @@ passport.use(
     // DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
     const hashedPassword = await hashPassword(password);
     const matchPassword = await compareHashPassword(password, hashedPassword);
-    // DELETE TO HERE
+    // DELETE TO HERE AND CHANGE matchPassword TO password === user.password BELOW
     const matchingUser = users.find(
       (user) => email === user.email && matchPassword
     );

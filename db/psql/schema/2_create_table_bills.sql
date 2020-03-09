@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS bills CASCADE;
 CREATE TABLE bills (
   id SERIAL PRIMARY KEY,
   parliamentary_session_id INT NOT NULL REFERENCES parliamentary_sessions (id),
-  code VARCHAR (25) NOT NULL,
+  code VARCHAR (25) NOT NULL UNIQUE,
   title VARCHAR (555) NOT NULL,
   description VARCHAR (2555) NOT NULL,
   introduced_date DATE,

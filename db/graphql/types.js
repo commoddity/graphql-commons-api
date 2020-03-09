@@ -136,6 +136,7 @@ const UserType = new GraphQLObjectType({
     id: { type: GraphQLNonNull(GraphQLInt) },
     first_name: { type: GraphQLNonNull(GraphQLString) },
     last_name: { type: GraphQLNonNull(GraphQLString) },
+    username: { type: GraphQLNonNull(GraphQLString) },
     password: { type: GraphQLNonNull(GraphQLString) },
     email: { type: GraphQLNonNull(GraphQLString) },
     phone_number: { type: GraphQLInt },
