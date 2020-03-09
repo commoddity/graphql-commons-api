@@ -4,14 +4,15 @@ CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   first_name VARCHAR (255) NOT NULL,
   last_name VARCHAR (255) NOT NULL,
+  username VARCHAR (255) NOT NULL UNIQUE,
   password VARCHAR (255) NOT NULL,
-  email VARCHAR (255) NOT NULL,
+  email VARCHAR (255) NOT NULL UNIQUE,
   phone_number BIGINT,
   postal_code VARCHAR (255),
   email_notification VARCHAR (25),
   sms_notification VARCHAR (25),
   active BOOLEAN,
-  created_at TIMESTAMP default current_timestamp
+  created_at TIMESTAMP
 );
 
 GRANT ALL PRIVILEGES ON TABLE users TO commoddity;

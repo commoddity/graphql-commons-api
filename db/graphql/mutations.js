@@ -1,5 +1,12 @@
+require('dotenv/config');
 const graphql = require('graphql');
 const graphqldate = require('graphql-iso-date');
+
+// DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
+const {
+  hashPassword,
+  compareHashPassword
+} = require('../../src/helpers/hashHelpers');
 
 const {
   GraphQLObjectType,
@@ -10,12 +17,15 @@ const {
 } = graphql;
 const { GraphQLDate, GraphQLDateTime } = graphqldate;
 
-const { db } = require('../../pgAdaptor');
+const { db } = require('../../src/pgAdaptor');
 const {
   ParliamentarySessionType,
   BillType,
   EventType,
-  UserType
+  UserType,
+  BillCategoryType,
+  UserBillType,
+  UserCategoryType
 } = require('./types');
 
 // MutationRoot stores mutations for creating/updating data in the database
@@ -23,12 +33,14 @@ const RootMutation = new GraphQLObjectType({
   name: 'RootMutationType',
   type: 'Mutation',
   fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt) },
     addParliamentarySession: {
       type: ParliamentarySessionType,
       args: {
         number: { type: GraphQLNonNull(GraphQLString) },
         start_date: { type: GraphQLDate },
-        end_date: { type: GraphQLDate }
+        end_date: { type: GraphQLDate },
+        created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
         const query =
@@ -43,14 +55,15 @@ const RootMutation = new GraphQLObjectType({
           const response = await db.query(query, values);
           return response[0];
         } catch (err) {
-          console.error(err);
-          throw new Error('Failed to insert new parliamentary_session');
+          console.error(`Failed to insert new parliamentary_session. ${err}`);
+          throw new Error(`Failed to insert new parliamentary_session. ${err}`);
         }
       }
     },
     addBill: {
       type: BillType,
       args: {
+        parliamentary_session_id: { type: GraphQLNonNull(GraphQLInt) },
         code: { type: GraphQLNonNull(GraphQLString) },
         title: { type: GraphQLNonNull(GraphQLString) },
         description: { type: GraphQLNonNull(GraphQLString) },
@@ -58,12 +71,14 @@ const RootMutation = new GraphQLObjectType({
         summary_url: { type: GraphQLString },
         page_url: { type: GraphQLString },
         full_text_url: { type: GraphQLString },
-        passed: { type: GraphQLBoolean }
+        passed: { type: GraphQLBoolean },
+        created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
         const query =
-          'INSERT INTO bills (code, title, description, introduced_date, summary_url, page_url, full_text_url, passed, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *';
+          'INSERT INTO bills (parliamentary_session_id, code, title, description, introduced_date, summary_url, page_url, full_text_url, passed, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *';
         const values = [
+          args.parliamentary_session_id,
           args.code,
           args.title,
           args.description,
@@ -78,22 +93,25 @@ const RootMutation = new GraphQLObjectType({
           const response = await db.query(query, values);
           return response[0];
         } catch (err) {
-          console.error(err);
-          throw new Error('Failed to insert new bill');
+          console.error(`Failed to insert new bill. ${err}`);
+          throw new Error(`Failed to insert new bill. ${err}`);
         }
       }
     },
     addEvent: {
       type: EventType,
       args: {
+        bill_id: { type: GraphQLNonNull(GraphQLInt) },
         code: { type: GraphQLNonNull(GraphQLString) },
         title: { type: GraphQLNonNull(GraphQLString) },
-        publication_date: { type: GraphQLDate }
+        publication_date: { type: GraphQLDate },
+        created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
         const query =
-          'INSERT INTO events (code, title, publication_date, created_at) VALUES ($1, $2, $3, $4) RETURNING *';
+          'INSERT INTO events (bill_id, code, title, publication_date, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING *';
         const values = [
+          args.bill_id,
           args.code,
           args.title,
           args.publication_date,
@@ -103,8 +121,8 @@ const RootMutation = new GraphQLObjectType({
           const response = await db.query(query, values);
           return response[0];
         } catch (err) {
-          console.error(err);
-          throw new Error('Failed to insert new event');
+          console.error(`Failed to insert new event. ${err}`);
+          throw new Error(`Failed to insert new event. ${err}`);
         }
       }
     },
@@ -113,6 +131,7 @@ const RootMutation = new GraphQLObjectType({
       args: {
         first_name: { type: GraphQLNonNull(GraphQLString) },
         last_name: { type: GraphQLNonNull(GraphQLString) },
+        username: { type: GraphQLNonNull(GraphQLString) },
         password: { type: GraphQLNonNull(GraphQLString) },
         email: { type: GraphQLNonNull(GraphQLString) },
         phone_number: { type: GraphQLInt },
@@ -122,12 +141,16 @@ const RootMutation = new GraphQLObjectType({
         created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
+        // DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
+        const hashedPassword = await hashPassword(args.password);
         const query =
-          'INSERT INTO users (first_name, last_name, password, email, phone_number, email_notification, sms_notification, active, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *';
+          'INSERT INTO users (first_name, last_name, username, password, email, phone_number, email_notification, sms_notification, active, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *';
         const values = [
           args.first_name,
           args.last_name,
-          args.password,
+          args.username,
+          // DEV NOTE ---> CHANGE BACK TO args.password ONCE FRONT END BCRYPT HASHING IS SET UP
+          hashedPassword,
           args.email,
           args.phone_number,
           args.email_notification,
@@ -137,10 +160,122 @@ const RootMutation = new GraphQLObjectType({
         ];
         try {
           const response = await db.query(query, values);
+          console.log(
+            `Successfully added user ${args.first_name} ${args.last_name} to database.`
+          );
           return response[0];
         } catch (err) {
-          console.error(err);
-          throw new Error('Failed to insert new user');
+          console.error(`Failed to insert new user. ${err}`);
+          throw new Error(`Failed to insert new user. ${err}`);
+        }
+      }
+    },
+    addBillCategory: {
+      type: BillCategoryType,
+      args: {
+        bill_id: { type: GraphQLNonNull(GraphQLInt) },
+        category_id: { type: GraphQLNonNull(GraphQLInt) },
+        created_at: { type: GraphQLDateTime }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query =
+          'INSERT INTO bill_categories (bill_id, category_id, created_at) VALUES ($1, $2, $3) RETURNING *';
+        const values = [args.bill_id, args.category_id, new Date()];
+        try {
+          const response = await db.query(query, values);
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to insert new bill category. ${err}`);
+          throw new Error(`Failed to insert new bill category. ${err}`);
+        }
+      }
+    },
+    addUserBill: {
+      type: UserBillType,
+      args: {
+        user_id: { type: GraphQLNonNull(GraphQLInt) },
+        bill_id: { type: GraphQLNonNull(GraphQLInt) },
+        created_at: { type: GraphQLDateTime }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query =
+          'INSERT INTO user_bills (user_id, bill_id, created_at) VALUES ($1, $2, $3) RETURNING *';
+        const values = [args.user_id, args.bill_id, new Date()];
+        try {
+          const response = await db.query(query, values);
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to insert new user bill. ${err}`);
+          throw new Error(`Failed to insert new user bill. ${err}`);
+        }
+      }
+    },
+    addUserCategory: {
+      type: UserCategoryType,
+      args: {
+        user_id: { type: GraphQLNonNull(GraphQLInt) },
+        category_id: { type: GraphQLNonNull(GraphQLInt) },
+        created_at: { type: GraphQLDateTime }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query =
+          'INSERT INTO user_categories (user_id, category_id, created_at) VALUES ($1, $2, $3) RETURNING *';
+        const values = [args.user_id, args.category_id, new Date()];
+        try {
+          const response = await db.query(query, values);
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to insert new user category. ${err}`);
+          throw new Error(`Failed to insert new user category. ${err}`);
+        }
+      }
+    },
+    loginUser: {
+      type: UserType,
+      args: {
+        email: { type: GraphQLNonNull(GraphQLString) },
+        password: { type: GraphQLNonNull(GraphQLString) }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const { email, password } = args;
+        // DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
+        const hashedPassword = await hashPassword(password);
+        const matchPassword = await compareHashPassword(
+          password,
+          hashedPassword
+        );
+        console.log(`DEV ---> PASSWORD MATCH IS ${matchPassword}`);
+        // DEV NOTE ---> DELETE IF STATEMENT ONCE FRONT END BCRYPT HASHING IS SET UP
+        if (matchPassword) {
+          try {
+            const { user } = await context.authenticate('graphql-local', {
+              email,
+              password
+            });
+            await context.login(user);
+            console.log(`User successfully logged in using email: ${email}`);
+            return user;
+          } catch (err) {
+            console.error(`Failed to log in user with email: ${email}. ${err}`);
+            throw new Error(
+              `Failed to log in user with email: ${email}. ${err}`
+            );
+          }
+        }
+      }
+    },
+    logoutUser: {
+      type: UserType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLInt) }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        try {
+          await context.logout();
+          console.log(`Successfully logged out user with id ${args.id}`);
+        } catch (err) {
+          console.error(`Failed to log out user. ${err}`);
+          throw new Error(`Failed to log out user. ${err}`);
         }
       }
     }

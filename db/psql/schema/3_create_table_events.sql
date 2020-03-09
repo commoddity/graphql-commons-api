@@ -6,7 +6,7 @@ CREATE TABLE events (
   code VARCHAR (25) NOT NULL,
   title VARCHAR (555) NOT NULL,
   publication_date DATE,
-  created_at TIMESTAMP default current_timestamp
+  created_at TIMESTAMP
 );
 
 GRANT ALL PRIVILEGES ON TABLE events TO commoddity;
