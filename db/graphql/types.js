@@ -133,6 +133,7 @@ const UserType = new GraphQLObjectType({
   name: 'User',
   type: 'Query',
   fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt) },
     first_name: { type: GraphQLNonNull(GraphQLString) },
     last_name: { type: GraphQLNonNull(GraphQLString) },
     password: { type: GraphQLNonNull(GraphQLString) },

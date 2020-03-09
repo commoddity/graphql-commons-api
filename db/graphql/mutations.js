@@ -1,5 +1,11 @@
+require('dotenv/config');
 const graphql = require('graphql');
 const graphqldate = require('graphql-iso-date');
+
+const {
+  hashPassword,
+  compareHashPassword
+} = require('../../src/helpers/hashHelpers');
 
 const {
   GraphQLObjectType,
@@ -10,7 +16,7 @@ const {
 } = graphql;
 const { GraphQLDate, GraphQLDateTime } = graphqldate;
 
-const { db } = require('../../pgAdaptor');
+const { db } = require('../../src/pgAdaptor');
 const {
   ParliamentarySessionType,
   BillType,
@@ -23,6 +29,7 @@ const RootMutation = new GraphQLObjectType({
   name: 'RootMutationType',
   type: 'Mutation',
   fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt) },
     addParliamentarySession: {
       type: ParliamentarySessionType,
       args: {
@@ -51,6 +58,7 @@ const RootMutation = new GraphQLObjectType({
     addBill: {
       type: BillType,
       args: {
+        id: { type: GraphQLNonNull(GraphQLInt) },
         code: { type: GraphQLNonNull(GraphQLString) },
         title: { type: GraphQLNonNull(GraphQLString) },
         description: { type: GraphQLNonNull(GraphQLString) },
@@ -86,6 +94,7 @@ const RootMutation = new GraphQLObjectType({
     addEvent: {
       type: EventType,
       args: {
+        id: { type: GraphQLNonNull(GraphQLInt) },
         code: { type: GraphQLNonNull(GraphQLString) },
         title: { type: GraphQLNonNull(GraphQLString) },
         publication_date: { type: GraphQLDate }
@@ -111,6 +120,7 @@ const RootMutation = new GraphQLObjectType({
     addUser: {
       type: UserType,
       args: {
+        id: { type: GraphQLNonNull(GraphQLInt) },
         first_name: { type: GraphQLNonNull(GraphQLString) },
         last_name: { type: GraphQLNonNull(GraphQLString) },
         password: { type: GraphQLNonNull(GraphQLString) },
@@ -122,12 +132,13 @@ const RootMutation = new GraphQLObjectType({
         created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
+        const hashedPassword = await hashPassword(args.password);
         const query =
           'INSERT INTO users (first_name, last_name, password, email, phone_number, email_notification, sms_notification, active, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *';
         const values = [
           args.first_name,
           args.last_name,
-          args.password,
+          hashedPassword,
           args.email,
           args.phone_number,
           args.email_notification,
@@ -137,10 +148,58 @@ const RootMutation = new GraphQLObjectType({
         ];
         try {
           const response = await db.query(query, values);
+          console.log(
+            `Successfully added user ${args.first_name} ${args.last_name} to database.`
+          );
           return response[0];
         } catch (err) {
           console.error(err);
           throw new Error('Failed to insert new user');
+        }
+      }
+    },
+    loginUser: {
+      type: UserType,
+      args: {
+        email: { type: GraphQLNonNull(GraphQLString) },
+        password: { type: GraphQLNonNull(GraphQLString) }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const { email, password } = args;
+        // DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
+        const hashedPassword = await hashPassword(password);
+        const matchPassword = await compareHashPassword(
+          password,
+          hashedPassword
+        );
+        console.log(`DEV ---> PASSWORD MATCH IS ${matchPassword}`);
+        // DEV NOTE ---> DELETE IF STATEMENT ONCE FRONT END BCRYPT HASHING IS SET UP
+        if (matchPassword) {
+          try {
+            const { user } = await context.authenticate('graphql-local', {
+              email,
+              password
+            });
+            await context.login(user);
+            console.log(`User successfully logged in using email: ${email}`);
+            return user;
+          } catch (err) {
+            throw new Error(
+              `Failed to log in user with email: ${email}. ${err}`
+            );
+          }
+        }
+      }
+    },
+    logoutUser: {
+      type: UserType,
+      resolve: async (parent, args, context, resolveInfo) => {
+        console.log('TEST');
+        try {
+          await context.logout();
+          console.log('Successfully logged out user');
+        } catch (err) {
+          throw new Error(`Failed to log out user. ${err}`);
         }
       }
     }

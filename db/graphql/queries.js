@@ -3,7 +3,7 @@ const joinMonster = require('join-monster');
 
 const { GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLInt } = graphql;
 
-const { db } = require('../../pgAdaptor');
+const { db } = require('../../src/pgAdaptor');
 const {
   ParliamentarySessionType,
   BillType,
