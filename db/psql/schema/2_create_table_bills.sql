@@ -11,7 +11,7 @@ CREATE TABLE bills (
   page_url VARCHAR(555),
   full_text_url VARCHAR(555),
   passed BOOLEAN,
-  created_at TIMESTAMP default current_timestamp
+  created_at TIMESTAMP
 );
 
 GRANT ALL PRIVILEGES ON TABLE bills TO commoddity;

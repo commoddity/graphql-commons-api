@@ -12,7 +12,7 @@ CREATE TABLE users (
   email_notification VARCHAR (25),
   sms_notification VARCHAR (25),
   active BOOLEAN,
-  created_at TIMESTAMP default current_timestamp
+  created_at TIMESTAMP
 );
 
 GRANT ALL PRIVILEGES ON TABLE users TO commoddity;

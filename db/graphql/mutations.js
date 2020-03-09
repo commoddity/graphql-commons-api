@@ -36,7 +36,8 @@ const RootMutation = new GraphQLObjectType({
       args: {
         number: { type: GraphQLNonNull(GraphQLString) },
         start_date: { type: GraphQLDate },
-        end_date: { type: GraphQLDate }
+        end_date: { type: GraphQLDate },
+        created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
         const query =
@@ -67,7 +68,8 @@ const RootMutation = new GraphQLObjectType({
         summary_url: { type: GraphQLString },
         page_url: { type: GraphQLString },
         full_text_url: { type: GraphQLString },
-        passed: { type: GraphQLBoolean }
+        passed: { type: GraphQLBoolean },
+        created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
         const query =
@@ -96,14 +98,17 @@ const RootMutation = new GraphQLObjectType({
     addEvent: {
       type: EventType,
       args: {
+        bill_id: { type: GraphQLNonNull(GraphQLInt) },
         code: { type: GraphQLNonNull(GraphQLString) },
         title: { type: GraphQLNonNull(GraphQLString) },
-        publication_date: { type: GraphQLDate }
+        publication_date: { type: GraphQLDate },
+        created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
         const query =
-          'INSERT INTO events (code, title, publication_date, created_at) VALUES ($1, $2, $3, $4) RETURNING *';
+          'INSERT INTO events (bill_id, code, title, publication_date, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING *';
         const values = [
+          args.bill_id,
           args.code,
           args.title,
           args.publication_date,
@@ -159,6 +164,66 @@ const RootMutation = new GraphQLObjectType({
         } catch (err) {
           console.error(`Failed to insert new user. ${err}`);
           throw new Error(`Failed to insert new user. ${err}`);
+        }
+      }
+    },
+    addBillCategory: {
+      type: BillCategoryType,
+      args: {
+        bill_id: { type: GraphQLNonNull(GraphQLInt) },
+        category_id: { type: GraphQLNonNull(GraphQLInt) },
+        created_at: { type: GraphQLDateTime }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query =
+          'INSERT INTO bill_categories (bill_id, category_id, created_at) VALUES ($1, $2, $3) RETURNING *';
+        const values = [args.bill_id, args.category_id, new Date()];
+        try {
+          const response = await db.query(query, values);
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to insert new bill category. ${err}`);
+          throw new Error(`Failed to insert new bill category. ${err}`);
+        }
+      }
+    },
+    addUserBill: {
+      type: UserBillType,
+      args: {
+        user_id: { type: GraphQLNonNull(GraphQLInt) },
+        bill_id: { type: GraphQLNonNull(GraphQLInt) },
+        created_at: { type: GraphQLDateTime }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query =
+          'INSERT INTO user_bills (user_id, bill_id, created_at) VALUES ($1, $2, $3) RETURNING *';
+        const values = [args.user_id, args.bill_id, new Date()];
+        try {
+          const response = await db.query(query, values);
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to insert new user bill. ${err}`);
+          throw new Error(`Failed to insert new user bill. ${err}`);
+        }
+      }
+    },
+    addUserCategory: {
+      type: UserCategoryType,
+      args: {
+        user_id: { type: GraphQLNonNull(GraphQLInt) },
+        category_id: { type: GraphQLNonNull(GraphQLInt) },
+        created_at: { type: GraphQLDateTime }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query =
+          'INSERT INTO user_categories (user_id, category_id, created_at) VALUES ($1, $2, $3) RETURNING *';
+        const values = [args.user_id, args.category_id, new Date()];
+        try {
+          const response = await db.query(query, values);
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to insert new user category. ${err}`);
+          throw new Error(`Failed to insert new user category. ${err}`);
         }
       }
     },

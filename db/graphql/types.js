@@ -23,6 +23,7 @@ const ParliamentarySessionType = new GraphQLObjectType({
     start_date: { type: GraphQLDate },
     end_date: { type: GraphQLDate },
     bills: {
+      description: 'Bills for this parliamentary session',
       type: GraphQLList(BillType),
       sqlJoin: (billTable, parliamentarySessionTable, args) =>
         `${billTable}.parliamentary_session_id = ${parliamentarySessionTable}.id`
@@ -56,19 +57,36 @@ const BillType = new GraphQLObjectType({
     passed: { type: GraphQLBoolean },
     created_at: { type: GraphQLDateTime },
     events: {
+      description: 'Events related this this bill',
       type: GraphQLList(EventType),
       sqlJoin: (billTable, eventTable, args) =>
         `${billTable}.id = ${eventTable}.bill_id`
     },
     categories: {
-      type: GraphQLList(CategoryType),
-      sqlJoin: (billTable, categoryTable, args) =>
-        `${billTable}.id = ${categoryTable}.bill_id`
+      description: 'Categories associated with this bill',
+      type: new GraphQLList(CategoryType),
+      junction: {
+        sqlTable: 'bill_categories',
+        sqlJoins: [
+          (billTable, billCategoriesTable, args) =>
+            `${billTable}.id = ${billCategoriesTable}.bill_id`,
+          (billCategoriesTable, categoryTable, args) =>
+            `${billCategoriesTable}.category_id = ${categoryTable}.id`
+        ]
+      }
     },
     users: {
-      type: GraphQLList(UserType),
-      sqlJoin: (billTable, userTable, args) =>
-        `${billTable}.id = ${userTable}.bill_id`
+      description: 'Users following this bill',
+      type: new GraphQLList(UserType),
+      junction: {
+        sqlTable: 'user_bills',
+        sqlJoins: [
+          (billTable, userBillsTable, args) =>
+            `${billTable}.id = ${userBillsTable}.bill_id`,
+          (userBillsTable, userTable, args) =>
+            `${userBillsTable}.user_id = ${userTable}.id`
+        ]
+      }
     }
   })
 });
@@ -111,14 +129,30 @@ const CategoryType = new GraphQLObjectType({
     uclassify_class: { type: GraphQLString },
     created_at: { type: GraphQLDateTime },
     users: {
-      type: GraphQLList(UserType),
-      sqlJoin: (categoryTable, userTable, args) =>
-        `${categoryTable}.id = ${userTable}.category_id`
+      description: 'Users following this category',
+      type: new GraphQLList(UserType),
+      junction: {
+        sqlTable: 'user_categories',
+        sqlJoins: [
+          (categoryTable, userCategoriesTable, args) =>
+            `${categoryTable}.id = ${userCategoriesTable}.category_id`,
+          (userCategoriesTable, userTable, args) =>
+            `${userCategoriesTable}.user_id = ${userTable}.id`
+        ]
+      }
     },
     bills: {
-      type: GraphQLList(BillType),
-      sqlJoin: (categoryTable, billTable, args) =>
-        `${categoryTable}.id = ${billTable}.category_id`
+      description: 'Bills associated with this category',
+      type: new GraphQLList(BillType),
+      junction: {
+        sqlTable: 'bill_categories',
+        sqlJoins: [
+          (categoryTable, billCategoriesTable, args) =>
+            `${categoryTable}.id = ${billCategoriesTable}.category_id`,
+          (billCategoriesTable, billTable, args) =>
+            `${billCategoriesTable}.bill_id = ${billTable}.id`
+        ]
+      }
     }
   })
 });
@@ -145,14 +179,30 @@ const UserType = new GraphQLObjectType({
     active: { type: GraphQLBoolean },
     created_at: { type: GraphQLDateTime },
     bills: {
-      type: GraphQLList(BillType),
-      sqlJoin: (userTable, billTable, args) =>
-        `${userTable}.id = ${billTable}.user_id`
+      description: 'Bills followed by this user',
+      type: new GraphQLList(BillType),
+      junction: {
+        sqlTable: 'user_bills',
+        sqlJoins: [
+          (userTable, userBillsTable, args) =>
+            `${userTable}.id = ${userBillsTable}.user_id`,
+          (userBillsTable, billTable, args) =>
+            `${userBillsTable}.bill_id = ${billTable}.id`
+        ]
+      }
     },
     categories: {
-      type: GraphQLList(CategoryType),
-      sqlJoin: (userTable, categoryTable, args) =>
-        `${userTable}.id = ${categoryTable}.user_id`
+      description: 'Categories followed by this user',
+      type: new GraphQLList(CategoryType),
+      junction: {
+        sqlTable: 'user_categories',
+        sqlJoins: [
+          (userTable, userCategoriesTable, args) =>
+            `${userTable}.id = ${userCategoriesTable}.user_id`,
+          (userCategoriesTable, categoryTable, args) =>
+            `${userCategoriesTable}.category_id = ${categoryTable}.id`
+        ]
+      }
     }
   })
 });
@@ -162,8 +212,59 @@ UserType._typeConfig = {
   uniqueKey: 'id'
 };
 
+const BillCategoryType = new GraphQLObjectType({
+  name: 'BillCategory',
+  type: 'Query',
+  fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt) },
+    bill_id: { type: GraphQLNonNull(GraphQLString) },
+    category_id: { type: GraphQLNonNull(GraphQLString) },
+    created_at: { type: GraphQLDateTime }
+  })
+});
+
+BillCategoryType._typeConfig = {
+  sqlTable: 'bill_categories',
+  uniqueKey: 'id'
+};
+
+const UserBillType = new GraphQLObjectType({
+  name: 'UserBill',
+  type: 'Query',
+  fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt) },
+    user_id: { type: GraphQLNonNull(GraphQLString) },
+    bill_id: { type: GraphQLNonNull(GraphQLString) },
+    created_at: { type: GraphQLDateTime }
+  })
+});
+
+UserBillType._typeConfig = {
+  sqlTable: 'user_bills',
+  uniqueKey: 'id'
+};
+
+const UserCategoryType = new GraphQLObjectType({
+  name: 'UserCategory',
+  type: 'Query',
+  fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt) },
+    user_id: { type: GraphQLNonNull(GraphQLString) },
+    category_id: { type: GraphQLNonNull(GraphQLString) },
+    created_at: { type: GraphQLDateTime }
+  })
+});
+
+UserCategoryType._typeConfig = {
+  sqlTable: 'user_categories',
+  uniqueKey: 'id'
+};
+
 exports.ParliamentarySessionType = ParliamentarySessionType;
 exports.BillType = BillType;
 exports.EventType = EventType;
 exports.CategoryType = CategoryType;
 exports.UserType = UserType;
+exports.BillCategoryType = BillCategoryType;
+exports.UserBillType = UserBillType;
+exports.UserCategoryType = UserCategoryType;
