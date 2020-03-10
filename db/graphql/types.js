@@ -21,6 +21,7 @@ const ParliamentType = new GraphQLObjectType({
     id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
     start_date: { type: GraphQLDate, sqlColumn: 'start_date' },
     end_date: { type: GraphQLDate, sqlColumn: 'end_date' },
+    created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' },
     parliamentary_sessions: {
       description: 'Parliamentary sessions for this parliament',
       type: GraphQLList(BillType),
@@ -49,6 +50,7 @@ const ParliamentarySessionType = new GraphQLObjectType({
     number: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'number' },
     start_date: { type: GraphQLDate, sqlColumn: 'start_date' },
     end_date: { type: GraphQLDate, sqlColumn: 'end_date' },
+    created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' },
     bills: {
       description: 'Bills for this parliamentary session',
       type: GraphQLList(BillType),
@@ -253,7 +255,6 @@ const BillCategoryType = new GraphQLObjectType({
   name: 'BillCategory',
   type: 'Query',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
     bill_id: { type: GraphQLNonNull(GraphQLString) },
     category_id: { type: GraphQLNonNull(GraphQLString) },
     created_at: { type: GraphQLDateTime }
@@ -261,15 +262,13 @@ const BillCategoryType = new GraphQLObjectType({
 });
 
 BillCategoryType._typeConfig = {
-  sqlTable: 'bill_categories',
-  uniqueKey: 'id'
+  sqlTable: 'bill_categories'
 };
 
 const UserBillType = new GraphQLObjectType({
   name: 'UserBill',
   type: 'Query',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
     user_id: { type: GraphQLNonNull(GraphQLString) },
     bill_id: { type: GraphQLNonNull(GraphQLString) },
     created_at: { type: GraphQLDateTime }
@@ -277,15 +276,13 @@ const UserBillType = new GraphQLObjectType({
 });
 
 UserBillType._typeConfig = {
-  sqlTable: 'user_bills',
-  uniqueKey: 'id'
+  sqlTable: 'user_bills'
 };
 
 const UserCategoryType = new GraphQLObjectType({
   name: 'UserCategory',
   type: 'Query',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
     user_id: { type: GraphQLNonNull(GraphQLString) },
     category_id: { type: GraphQLNonNull(GraphQLString) },
     created_at: { type: GraphQLDateTime }
@@ -293,8 +290,7 @@ const UserCategoryType = new GraphQLObjectType({
 });
 
 UserCategoryType._typeConfig = {
-  sqlTable: 'user_categories',
-  uniqueKey: 'id'
+  sqlTable: 'user_categories'
 };
 
 exports.ParliamentType = ParliamentType;
