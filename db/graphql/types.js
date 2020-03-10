@@ -14,14 +14,41 @@ const { GraphQLDate, GraphQLDateTime } = graphqldate;
 //GraphQL types are defined below
 
 // Parliamentary Sessions
+const ParliamentType = new GraphQLObjectType({
+  name: 'Parliament',
+  type: 'Query',
+  fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
+    start_date: { type: GraphQLDate, sqlColumn: 'start_date' },
+    end_date: { type: GraphQLDate, sqlColumn: 'end_date' },
+    parliamentary_sessions: {
+      description: 'Parliamentary sessions for this parliament',
+      type: GraphQLList(BillType),
+      sqlJoin: (parliamentarySessionTable, parliamentTable, args) =>
+        `${parliamentarySessionTable}.parliament_id = ${parliamentTable}.id`
+    }
+  })
+});
+
+ParliamentType._typeConfig = {
+  sqlTable: 'parliaments',
+  uniqueKey: 'id'
+};
+
 const ParliamentarySessionType = new GraphQLObjectType({
   name: 'ParliamentarySession',
   type: 'Query',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
-    number: { type: GraphQLNonNull(GraphQLString) },
-    start_date: { type: GraphQLDate },
-    end_date: { type: GraphQLDate },
+    id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
+    parliament: {
+      type: ParliamentType,
+      sqlColumn: 'parliament_id',
+      sqlJoin: (parliamentarySessionTable, parliamentTable, args) =>
+        `${parliamentarySessionTable}.parliament_id = ${parliamentTable}.id`
+    },
+    number: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'number' },
+    start_date: { type: GraphQLDate, sqlColumn: 'start_date' },
+    end_date: { type: GraphQLDate, sqlColumn: 'end_date' },
     bills: {
       description: 'Bills for this parliamentary session',
       type: GraphQLList(BillType),
@@ -270,6 +297,7 @@ UserCategoryType._typeConfig = {
   uniqueKey: 'id'
 };
 
+exports.ParliamentType = ParliamentType;
 exports.ParliamentarySessionType = ParliamentarySessionType;
 exports.BillType = BillType;
 exports.EventType = EventType;

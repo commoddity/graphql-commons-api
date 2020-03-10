@@ -5,6 +5,7 @@ const { GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLInt } = graphql;
 
 const { db } = require('../../src/pgAdaptor');
 const {
+  ParliamentType,
   ParliamentarySessionType,
   BillType,
   EventType,
@@ -17,6 +18,25 @@ const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   type: 'Query',
   fields: () => ({
+    parliaments: {
+      type: new GraphQLList(ParliamentType),
+      resolve: (parent, args, context, resolveInfo) => {
+        return joinMonster.default(resolveInfo, {}, (sql) => {
+          return db.query(sql);
+        });
+      }
+    },
+    parliament: {
+      type: ParliamentType,
+      args: { id: { type: GraphQLNonNull(GraphQLInt) } },
+      where: (parliamentTable, args, context) =>
+        `${parliamentTable}.id = ${args.id}`,
+      resolve: (parent, args, context, resolveInfo) => {
+        return joinMonster.default(resolveInfo, {}, (sql) => {
+          return db.query(sql);
+        });
+      }
+    },
     parliamentarySessions: {
       type: new GraphQLList(ParliamentarySessionType),
       resolve: (parent, args, context, resolveInfo) => {

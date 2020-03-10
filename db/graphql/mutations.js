@@ -19,6 +19,7 @@ const { GraphQLDate, GraphQLDateTime } = graphqldate;
 
 const { db } = require('../../src/pgAdaptor');
 const {
+  ParliamentType,
   ParliamentarySessionType,
   BillType,
   EventType,
@@ -33,10 +34,30 @@ const RootMutation = new GraphQLObjectType({
   name: 'RootMutationType',
   type: 'Mutation',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
+    addParliament: {
+      type: ParliamentType,
+      args: {
+        start_date: { type: GraphQLDate },
+        end_date: { type: GraphQLDate },
+        created_at: { type: GraphQLDateTime }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query =
+          'INSERT INTO parliaments (start_date, end_date, created_at) VALUES ($1, $2, $3) RETURNING *';
+        const values = [args.start_date, args.end_date, new Date()];
+        try {
+          const response = await db.query(query, values);
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to insert new parliament. ${err}`);
+          throw new Error(`Failed to insert new parliament. ${err}`);
+        }
+      }
+    },
     addParliamentarySession: {
       type: ParliamentarySessionType,
       args: {
+        parliament_id: { type: GraphQLNonNull(GraphQLInt) },
         number: { type: GraphQLNonNull(GraphQLString) },
         start_date: { type: GraphQLDate },
         end_date: { type: GraphQLDate },
@@ -44,8 +65,9 @@ const RootMutation = new GraphQLObjectType({
       },
       resolve: async (parent, args, context, resolveInfo) => {
         const query =
-          'INSERT INTO parliamentary_sessions (number, start_date, end_date, created_at) VALUES ($1, $2, $3, $4) RETURNING *';
+          'INSERT INTO parliamentary_sessions (parliament_id, number, start_date, end_date, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING *';
         const values = [
+          args.parliament_id,
           args.number,
           args.start_date,
           args.end_date,

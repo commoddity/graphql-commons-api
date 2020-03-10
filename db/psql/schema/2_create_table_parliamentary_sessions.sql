@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS parliamentary_sessions CASCADE;
 
 CREATE TABLE parliamentary_sessions (
   id SERIAL PRIMARY KEY,
+  parliament_id INT NOT NULL REFERENCES parliaments (id),
   number BIGINT,
   start_date DATE,
   end_date DATE,
