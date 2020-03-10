@@ -11,7 +11,7 @@ const writeToDbCaller = async (url) => {
   const billsArray = splitBills(sourceArray);
   const eventsArray = splitEvents(sourceArray);
   console.log(billsArray);
-  console.log(eventsArray);
+  // console.log(eventsArray);
 };
 
 writeToDbCaller(url);

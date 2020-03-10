@@ -31,9 +31,9 @@ const splitEvents = (array) => {
     };
     eventsArray.push(bill);
   });
-  return eventsArray.sort((a, b) =>
-    a.publication_date < b.publication_date ? 1 : -1
-  );
+  return eventsArray
+    .sort((a, b) => (a.publication_date > b.publication_date ? 1 : -1))
+    .sort((a, b) => (a.code > b.code ? 1 : -1));
 };
 
 module.exports = { splitBills, splitEvents };

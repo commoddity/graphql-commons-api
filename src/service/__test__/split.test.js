@@ -30,11 +30,11 @@ const testArray = [
     pubDate: 'Tue, 10 Mar 2020 00:00:00 EST'
   },
   {
-    title: 'S-213, Debate at Second Reading in the Senate',
+    title: 'S-214, Debate at Second Reading in the Senate',
     link:
       'https://www.parl.ca/LegisInfo/BillDetails.aspx?Language=E&billId=10629396',
     description:
-      'S-213, An Act to change the name of the electoral district of Châteauguay—Lacolle',
+      'S-214, An Act to amend the Criminal Records Act, to make consequential amendments to other Acts and to repeal a regulation',
     pubDate: 'Tue, 10 Mar 2020 00:00:00 EST'
   }
 ];
@@ -69,9 +69,9 @@ describe('splitBills', () => {
     },
     {
       parliamentary_session_id: undefined,
-      code: 'S-213',
+      code: 'S-214',
       title:
-        'An Act to change the name of the electoral district of Châteauguay—Lacolle',
+        'An Act to amend the Criminal Records Act, to make consequential amendments to other Acts and to repeal a regulation',
       description: undefined,
       introduced_date: undefined,
       summary_url: undefined,
@@ -101,25 +101,25 @@ describe('splitEvents', () => {
       bill_id: undefined,
       code: 'C-9',
       title: 'Introduction and First Reading in the House of Commons',
-      publication_date: '10-03-2020'
+      publication_date: '2020-03-10'
     },
     {
       bill_id: undefined,
       code: 'C-9',
       title: 'Debate at Second Reading in the in the House of Commons',
-      publication_date: '10-03-2020'
+      publication_date: '2020-03-10'
     },
     {
       bill_id: undefined,
       code: 'S-208',
       title: 'Debate at Second Reading in the Senate',
-      publication_date: '10-03-2020'
+      publication_date: '2020-03-10'
     },
     {
       bill_id: undefined,
-      code: 'S-213',
+      code: 'S-214',
       title: 'Debate at Second Reading in the Senate',
-      publication_date: '10-03-2020'
+      publication_date: '2020-03-10'
     }
   ];
 

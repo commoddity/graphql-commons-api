@@ -33,7 +33,7 @@ describe('formatDate', () => {
   };
 
   test('formatDate should format date', () => {
-    expect(formatDate(testBill.pubDate)).toBe('10-03-2020');
+    expect(formatDate(testBill.pubDate)).toBe('2020-03-10');
   });
 });
 

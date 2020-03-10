@@ -16,12 +16,12 @@ const formatDate = (date) => {
   const parsedDate = new Date(date);
   return moment(parsedDate)
     .utcOffset('-0400')
-    .format(`DD-MM-YYYY`);
+    .format(`YYYY-MM-DD`);
 };
 
 const formatCode = (description) =>
   description.substr(0, description.indexOf(','));
 
-const formatTitle = (title) => title.split(', ')[1];
+const formatTitle = (title) => title.split(/, (.+)/)[1];
 
 module.exports = { formatXml, formatDate, formatCode, formatTitle };
