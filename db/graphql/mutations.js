@@ -45,9 +45,9 @@ const RootMutation = new GraphQLObjectType({
       resolve: async (parent, args, context, resolveInfo) => {
         try {
           const query = `INSERT INTO parliaments (start_date, end_date, created_at) 
-            VALUES ($1, $2, $3) 
+            VALUES ($1, $2, (to_timestamp(${Date.now()} / 1000.0))) 
             RETURNING *`;
-          const values = [args.start_date, args.end_date, new Date()];
+          const values = [args.start_date, args.end_date];
           const response = await db.query(query, values);
           console.log(`Successfully added new parliament to database.`);
           return response[0];
@@ -69,14 +69,13 @@ const RootMutation = new GraphQLObjectType({
       resolve: async (parent, args, context, resolveInfo) => {
         try {
           const query = `INSERT INTO parliamentary_sessions (parliament_id, number, start_date, end_date, created_at) 
-            VALUES ($1, $2, $3, $4, $5) 
+            VALUES ($1, $2, $3, $4, (to_timestamp(${Date.now()} / 1000.0))) 
             RETURNING *`;
           const values = [
             args.parliament_id,
             args.number,
             args.start_date,
-            args.end_date,
-            new Date()
+            args.end_date
           ];
           const response = await db.query(query, values);
           console.log(
@@ -106,7 +105,7 @@ const RootMutation = new GraphQLObjectType({
       resolve: async (parent, args, context, resolveInfo) => {
         try {
           const query = `INSERT INTO bills (parliamentary_session_id, code, title, description, introduced_date, summary_url, page_url, full_text_url, passed, created_at) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, (to_timestamp(${Date.now()} / 1000.0))) 
             RETURNING *`;
           const values = [
             args.parliamentary_session_id,
@@ -117,8 +116,7 @@ const RootMutation = new GraphQLObjectType({
             args.summary_url,
             args.page_url,
             args.full_text_url,
-            args.passed,
-            new Date()
+            args.passed
           ];
           const response = await db.query(query, values);
           console.log(`Successfully added Bill ${args.code} to database.`);
@@ -140,14 +138,9 @@ const RootMutation = new GraphQLObjectType({
       resolve: async (parent, args, context, resolveInfo) => {
         try {
           const query = `INSERT INTO events (bill_code, title, publication_date, created_at) 
-            VALUES ($1, $2, $3, $4) 
+            VALUES ($1, $2, $3, (to_timestamp(${Date.now()} / 1000.0))) 
             RETURNING *`;
-          const values = [
-            args.bill_code,
-            args.title,
-            args.publication_date,
-            new Date()
-          ];
+          const values = [args.bill_code, args.title, args.publication_date];
           const response = await db.query(query, values);
           console.log(
             `Successfully added event for Bill ${args.bill_code} to database.`
@@ -178,7 +171,7 @@ const RootMutation = new GraphQLObjectType({
           // DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
           const hashedPassword = await hashPassword(args.password);
           const query = `INSERT INTO users (first_name, last_name, username, password, email, phone_number, email_notification, sms_notification, active, created_at) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, (to_timestamp(${Date.now()} / 1000.0))) 
             RETURNING *`;
           const values = [
             args.first_name,
@@ -190,8 +183,7 @@ const RootMutation = new GraphQLObjectType({
             args.phone_number,
             args.email_notification,
             args.sms_notification,
-            args.active,
-            new Date()
+            args.active
           ];
           const response = await db.query(query, values);
           console.log(
@@ -213,9 +205,9 @@ const RootMutation = new GraphQLObjectType({
       resolve: async (parent, args, context, resolveInfo) => {
         try {
           const query = `INSERT INTO bill_categories (bill_id, category_id, created_at) 
-            VALUES ($1, $2, $3) 
+            VALUES ($1, $2, (to_timestamp(${Date.now()} / 1000.0))) 
             RETURNING *`;
-          const values = [args.bill_id, args.category_id, new Date()];
+          const values = [args.bill_id, args.category_id];
           const response = await db.query(query, values);
           console.log('Successfully added bill category.');
           return response[0];
@@ -255,9 +247,9 @@ const RootMutation = new GraphQLObjectType({
       resolve: async (parent, args, context, resolveInfo) => {
         try {
           const query = `INSERT INTO user_bills (user_id, bill_id, created_at) 
-            VALUES ($1, $2, $3) 
+            VALUES ($1, $2, (to_timestamp(${Date.now()} / 1000.0))) 
             RETURNING *`;
-          const values = [args.user_id, args.bill_id, new Date()];
+          const values = [args.user_id, args.bill_id];
           const response = await db.query(query, values);
           console.log('Successfully added user bill.');
           return response[0];
@@ -297,9 +289,9 @@ const RootMutation = new GraphQLObjectType({
       resolve: async (parent, args, context, resolveInfo) => {
         try {
           const query = `INSERT INTO user_categories (user_id, category_id, created_at) 
-            VALUES ($1, $2, $3) 
+            VALUES ($1, $2, (to_timestamp(${Date.now()} / 1000.0))) 
             RETURNING *`;
-          const values = [args.user_id, args.category_id, new Date()];
+          const values = [args.user_id, args.category_id];
           const response = await db.query(query, values);
           console.log('Successfully added user category.');
           return response[0];
