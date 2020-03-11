@@ -2,8 +2,7 @@ DROP TABLE IF EXISTS events CASCADE;
 
 CREATE TABLE events (
   id SERIAL PRIMARY KEY,
-  bill_id INT NOT NULL REFERENCES bills (id),
-  code VARCHAR (25) NOT NULL,
+  bill_code VARCHAR (7) NOT NULL REFERENCES bills (code),
   title VARCHAR (555) NOT NULL,
   publication_date DATE,
   created_at TIMESTAMP

@@ -98,28 +98,24 @@ describe('splitBills', () => {
 describe('splitEvents', () => {
   const testEventsArray = [
     {
-      bill_id: undefined,
-      code: 'C-9',
+      bill_code: 'C-9',
       title: 'Introduction and First Reading in the House of Commons',
-      publication_date: '2020-03-10'
+      publication_date: '2020/03/10'
     },
     {
-      bill_id: undefined,
-      code: 'C-9',
+      bill_code: 'C-9',
       title: 'Debate at Second Reading in the in the House of Commons',
-      publication_date: '2020-03-10'
+      publication_date: '2020/03/10'
     },
     {
-      bill_id: undefined,
-      code: 'S-208',
+      bill_code: 'S-208',
       title: 'Debate at Second Reading in the Senate',
-      publication_date: '2020-03-10'
+      publication_date: '2020/03/10'
     },
     {
-      bill_id: undefined,
-      code: 'S-214',
+      bill_code: 'S-214',
       title: 'Debate at Second Reading in the Senate',
-      publication_date: '2020-03-10'
+      publication_date: '2020/03/10'
     }
   ];
 

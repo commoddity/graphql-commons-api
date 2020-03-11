@@ -6,8 +6,11 @@ const {
   fetchXml,
   fetchFullTextUrl,
   fetchIntroducedDate,
-  fetchDescription
+  fetchDescription,
+  fetchSummaryUrls
 } = require('../fetch');
+
+const { formatXml } = require('../format');
 
 describe('fetchXml', () => {
   const testUrl =
@@ -70,13 +73,24 @@ describe('fetchIntroducedDate', () => {
 
 describe('fetchDescription', () => {
   const testBillCode = 'S-215';
-  const testFulltextUrl = 'https://parl.ca/DocumentViewer/en/10637457';
+  const testFullTextUrl = 'https://parl.ca/DocumentViewer/en/10637457';
   const testDescription =
     'This enactment amends the Greenhouse Gas Pollution Pricing Act to modify the definitions of eligible farming machinery and qualifying farming fuel.';
 
   test('fetchFullTextUrl fetches the description if available', () => {
-    return fetchDescription(testFulltextUrl, testBillCode).then((data) => {
+    return fetchDescription(testFullTextUrl, testBillCode).then((data) => {
       expect(data).toEqual(testDescription);
+    });
+  });
+});
+
+describe('fetchSummaryUrls', () => {
+  const testSummariesUrl =
+    'https://www.parl.ca/legisinfo/RSSFeed.aspx?download=rss&Language=E&source=LegislativeSummaryPublications';
+
+  test('fetchFullTextUrl fetches the summary_url if available', () => {
+    return fetchSummaryUrls(testSummariesUrl).then((data) => {
+      expect(data).toBeInstanceOf(Array);
     });
   });
 });
