@@ -19,6 +19,7 @@ const { GraphQLDate, GraphQLDateTime } = graphqldate;
 
 const { db } = require('../../src/pgAdaptor');
 const {
+  ParliamentType,
   ParliamentarySessionType,
   BillType,
   EventType,
@@ -33,19 +34,43 @@ const RootMutation = new GraphQLObjectType({
   name: 'RootMutationType',
   type: 'Mutation',
   fields: () => ({
-    id: { type: GraphQLNonNull(GraphQLInt) },
+    addParliament: {
+      type: ParliamentType,
+      args: {
+        start_date: { type: GraphQLDate },
+        end_date: { type: GraphQLDate },
+        created_at: { type: GraphQLDateTime }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query = `INSERT INTO parliaments (start_date, end_date, created_at) 
+          VALUES ($1, $2, $3) 
+          RETURNING *`;
+        const values = [args.start_date, args.end_date, new Date()];
+        try {
+          const response = await db.query(query, values);
+          console.log(`Successfully added new parliament to database.`);
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to insert new parliament. ${err}`);
+          throw new Error(`Failed to insert new parliament. ${err}`);
+        }
+      }
+    },
     addParliamentarySession: {
       type: ParliamentarySessionType,
       args: {
+        parliament_id: { type: GraphQLNonNull(GraphQLInt) },
         number: { type: GraphQLNonNull(GraphQLString) },
         start_date: { type: GraphQLDate },
         end_date: { type: GraphQLDate },
         created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
-        const query =
-          'INSERT INTO parliamentary_sessions (number, start_date, end_date, created_at) VALUES ($1, $2, $3, $4) RETURNING *';
+        const query = `INSERT INTO parliamentary_sessions (parliament_id, number, start_date, end_date, created_at) 
+          VALUES ($1, $2, $3, $4, $5) 
+          RETURNING *`;
         const values = [
+          args.parliament_id,
           args.number,
           args.start_date,
           args.end_date,
@@ -53,6 +78,9 @@ const RootMutation = new GraphQLObjectType({
         ];
         try {
           const response = await db.query(query, values);
+          console.log(
+            `Successfully added parliamentary session ${args.number} to database.`
+          );
           return response[0];
         } catch (err) {
           console.error(`Failed to insert new parliamentary_session. ${err}`);
@@ -75,8 +103,9 @@ const RootMutation = new GraphQLObjectType({
         created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
-        const query =
-          'INSERT INTO bills (parliamentary_session_id, code, title, description, introduced_date, summary_url, page_url, full_text_url, passed, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *';
+        const query = `INSERT INTO bills (parliamentary_session_id, code, title, description, introduced_date, summary_url, page_url, full_text_url, passed, created_at) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+          RETURNING *`;
         const values = [
           args.parliamentary_session_id,
           args.code,
@@ -91,6 +120,7 @@ const RootMutation = new GraphQLObjectType({
         ];
         try {
           const response = await db.query(query, values);
+          console.log(`Successfully added Bill ${args.code} to database.`);
           return response[0];
         } catch (err) {
           console.error(`Failed to insert new bill. ${err}`);
@@ -108,8 +138,9 @@ const RootMutation = new GraphQLObjectType({
         created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
-        const query =
-          'INSERT INTO events (bill_id, code, title, publication_date, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING *';
+        const query = `INSERT INTO events (bill_id, code, title, publication_date, created_at) 
+          VALUES ($1, $2, $3, $4, $5) 
+          RETURNING *`;
         const values = [
           args.bill_id,
           args.code,
@@ -119,6 +150,9 @@ const RootMutation = new GraphQLObjectType({
         ];
         try {
           const response = await db.query(query, values);
+          console.log(
+            `Successfully added event for Bill ${args.code} to database.`
+          );
           return response[0];
         } catch (err) {
           console.error(`Failed to insert new event. ${err}`);
@@ -143,8 +177,9 @@ const RootMutation = new GraphQLObjectType({
       resolve: async (parent, args, context, resolveInfo) => {
         // DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
         const hashedPassword = await hashPassword(args.password);
-        const query =
-          'INSERT INTO users (first_name, last_name, username, password, email, phone_number, email_notification, sms_notification, active, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *';
+        const query = `INSERT INTO users (first_name, last_name, username, password, email, phone_number, email_notification, sms_notification, active, created_at) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+          RETURNING *`;
         const values = [
           args.first_name,
           args.last_name,
@@ -174,19 +209,40 @@ const RootMutation = new GraphQLObjectType({
       type: BillCategoryType,
       args: {
         bill_id: { type: GraphQLNonNull(GraphQLInt) },
-        category_id: { type: GraphQLNonNull(GraphQLInt) },
-        created_at: { type: GraphQLDateTime }
+        category_id: { type: GraphQLNonNull(GraphQLInt) }
       },
       resolve: async (parent, args, context, resolveInfo) => {
-        const query =
-          'INSERT INTO bill_categories (bill_id, category_id, created_at) VALUES ($1, $2, $3) RETURNING *';
+        const query = `INSERT INTO bill_categories (bill_id, category_id, created_at) 
+          VALUES ($1, $2, $3) 
+          RETURNING *`;
         const values = [args.bill_id, args.category_id, new Date()];
         try {
           const response = await db.query(query, values);
+          console.log('Successfully added bill category.');
           return response[0];
         } catch (err) {
           console.error(`Failed to insert new bill category. ${err}`);
           throw new Error(`Failed to insert new bill category. ${err}`);
+        }
+      }
+    },
+    removeBillCategory: {
+      type: BillCategoryType,
+      args: {
+        bill_id: { type: GraphQLNonNull(GraphQLInt) },
+        category_id: { type: GraphQLNonNull(GraphQLInt) }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query = `DELETE FROM bill_categories 
+          WHERE (bill_id = $1) AND (category_id = $2)`;
+        const values = [args.bill_id, args.category_id];
+        try {
+          const response = await db.query(query, values);
+          console.log('Successfully deleted bill category.');
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to delete bill category. ${err}`);
+          throw new Error(`Failed to delete bill category. ${err}`);
         }
       }
     },
@@ -198,15 +254,37 @@ const RootMutation = new GraphQLObjectType({
         created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
-        const query =
-          'INSERT INTO user_bills (user_id, bill_id, created_at) VALUES ($1, $2, $3) RETURNING *';
+        const query = `INSERT INTO user_bills (user_id, bill_id, created_at) 
+          VALUES ($1, $2, $3) 
+          RETURNING *`;
         const values = [args.user_id, args.bill_id, new Date()];
         try {
           const response = await db.query(query, values);
+          console.log('Successfully added user bill.');
           return response[0];
         } catch (err) {
           console.error(`Failed to insert new user bill. ${err}`);
           throw new Error(`Failed to insert new user bill. ${err}`);
+        }
+      }
+    },
+    removeUserBill: {
+      type: UserBillType,
+      args: {
+        user_id: { type: GraphQLInt },
+        bill_id: { type: GraphQLInt }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query = `DELETE FROM user_bills 
+          WHERE (user_id = $1) AND (bill_id = $2)`;
+        const values = [args.user_id, args.bill_id];
+        try {
+          const response = await db.query(query, values);
+          console.log('Successfully deleted user bill.');
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to delete user bill. ${err}`);
+          throw new Error(`Failed to delete user bill. ${err}`);
         }
       }
     },
@@ -218,11 +296,13 @@ const RootMutation = new GraphQLObjectType({
         created_at: { type: GraphQLDateTime }
       },
       resolve: async (parent, args, context, resolveInfo) => {
-        const query =
-          'INSERT INTO user_categories (user_id, category_id, created_at) VALUES ($1, $2, $3) RETURNING *';
+        const query = `INSERT INTO user_categories (user_id, category_id, created_at) 
+          VALUES ($1, $2, $3) 
+          RETURNING *`;
         const values = [args.user_id, args.category_id, new Date()];
         try {
           const response = await db.query(query, values);
+          console.log('Successfully added user category.');
           return response[0];
         } catch (err) {
           console.error(`Failed to insert new user category. ${err}`);
@@ -230,6 +310,27 @@ const RootMutation = new GraphQLObjectType({
         }
       }
     },
+    removeUserCategory: {
+      type: UserCategoryType,
+      args: {
+        user_id: { type: GraphQLNonNull(GraphQLInt) },
+        category_id: { type: GraphQLNonNull(GraphQLInt) }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        const query = `DELETE FROM user_bills 
+          WHERE (user_id = $1) AND (category_id = $2)`;
+        const values = [args.user_id, args.category_id];
+        try {
+          const response = await db.query(query, values);
+          console.log('Successfully deleted user category.');
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to delete user bill. ${err}`);
+          throw new Error(`Failed to delete user bill. ${err}`);
+        }
+      }
+    },
+    // Login and logout mutations
     loginUser: {
       type: UserType,
       args: {
