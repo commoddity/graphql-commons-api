@@ -9,7 +9,8 @@ const {
   GraphQLInt,
   GraphQLBoolean
 } = graphql;
-const { GraphQLDate, GraphQLDateTime } = graphqldate;
+const { DateScalar } = require('./scalars.js');
+const { GraphQLDateTime } = graphqldate;
 
 //GraphQL types are defined below
 
@@ -19,8 +20,8 @@ const ParliamentType = new GraphQLObjectType({
   type: 'Query',
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
-    start_date: { type: GraphQLDate, sqlColumn: 'start_date' },
-    end_date: { type: GraphQLDate, sqlColumn: 'end_date' },
+    start_date: { type: DateScalar, sqlColumn: 'start_date' },
+    end_date: { type: DateScalar, sqlColumn: 'end_date' },
     created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' },
     parliamentary_sessions: {
       description: 'Parliamentary sessions for this parliament',
@@ -48,8 +49,8 @@ const ParliamentarySessionType = new GraphQLObjectType({
         `${parliamentarySessionTable}.parliament_id = ${parliamentTable}.id`
     },
     number: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'number' },
-    start_date: { type: GraphQLDate, sqlColumn: 'start_date' },
-    end_date: { type: GraphQLDate, sqlColumn: 'end_date' },
+    start_date: { type: DateScalar, sqlColumn: 'start_date' },
+    end_date: { type: DateScalar, sqlColumn: 'end_date' },
     created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' },
     bills: {
       description: 'Bills for this parliamentary session',
@@ -83,7 +84,7 @@ const BillType = new GraphQLObjectType({
       type: GraphQLNonNull(GraphQLString),
       sqlColumn: 'description'
     },
-    introduced_date: { type: GraphQLDate, sqlColumn: 'introduced_date' },
+    introduced_date: { type: DateScalar, sqlColumn: 'introduced_date' },
     summary_url: { type: GraphQLString, sqlColumn: 'summary_url' },
     page_url: { type: GraphQLString, sqlColumn: 'page_url' },
     full_text_url: { type: GraphQLString, sqlColumn: 'full_text_url' },
@@ -93,7 +94,7 @@ const BillType = new GraphQLObjectType({
       description: 'Events related this this bill',
       type: GraphQLList(EventType),
       sqlJoin: (billTable, eventTable, args) =>
-        `${billTable}.id = ${eventTable}.bill_id`
+        `${billTable}.code = ${eventTable}.bill_code`
     },
     categories: {
       description: 'Categories associated with this bill',
@@ -135,14 +136,13 @@ const EventType = new GraphQLObjectType({
   type: 'Query',
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
-    bill_id: {
+    bill_code: {
       type: BillType,
       sqlJoin: (eventTable, billTable, args) =>
-        `${eventTable}.bill_id = ${billTable}.id`
+        `${eventTable}.bill_code = ${billTable}.code`
     },
-    code: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'code' },
     title: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'title' },
-    publication_date: { type: GraphQLDate, sqlColumn: 'publication_date' },
+    publication_date: { type: DateScalar, sqlColumn: 'publication_date' },
     created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' }
   })
 });

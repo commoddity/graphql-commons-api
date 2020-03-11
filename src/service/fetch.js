@@ -1,5 +1,6 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const parser = require('xml2json');
 
 const fetchXml = async (url) => {
   try {
@@ -54,8 +55,6 @@ const fetchIntroducedDate = async (pageUrl, billCode) => {
   }
 };
 
-const testPageUrl = 'https://parl.ca/DocumentViewer/en/10637457';
-
 const fetchDescription = async (fullTextUrl, billCode) => {
   try {
     const response = await axios.get(fullTextUrl);
@@ -63,11 +62,7 @@ const fetchDescription = async (fullTextUrl, billCode) => {
     const summaryDiv = bill_page('div:contains("This enactment")')
       .last()
       .text();
-    !summaryDiv &&
-      console.log(
-        `No description available for Bill ${billCode}. Skipping ...`
-      );
-    return summaryDiv;
+    return summaryDiv.replace(/\s+/g, ' ').trim();
   } catch (err) {
     console.error(
       `An error occurred while fetching description for Bill ${billCode}: ${err}`
@@ -75,11 +70,47 @@ const fetchDescription = async (fullTextUrl, billCode) => {
   }
 };
 
-fetchDescription(testPageUrl);
+const testUrl =
+  'https://www.parl.ca/legisinfo/RSSFeed.aspx?download=rss&Language=E&source=LegislativeSummaryPublications';
+
+const fetchSummaryUrls = async (fullTextUrl) => {
+  const xml = await fetchXml(fullTextUrl);
+  const json = parser.toJson(xml);
+  const xmlObject = JSON.parse(json);
+  const summaries = xmlObject.rss.channel.item;
+  const summaryArray = [];
+  summaries.forEach((summary) => {
+    const summaryBillCode = summary.title.includes(
+      'Legislative Summary Published for '
+    )
+      ? summary.title
+          .split('Legislative Summary Published for ')[1]
+          .split(',')[0]
+      : summary.title
+          .split('Legislative Short Summary Published for ')[1]
+          .split(',')[0];
+    const summaryObject = {
+      code: summaryBillCode,
+      url: summary.link
+    };
+    summaryArray.push(summaryObject);
+  });
+  return summaryArray;
+};
+
+const fetchSummaryUrl = async (summaryArray, billCode) => {
+  summaryArray.forEach((summary) => {
+    if (summary.code === billCode) {
+      return summary.url;
+    }
+  });
+};
 
 module.exports = {
   fetchXml,
   fetchFullTextUrl,
   fetchIntroducedDate,
-  fetchDescription
+  fetchDescription,
+  fetchSummaryUrls,
+  fetchSummaryUrl
 };
