@@ -6,7 +6,7 @@ const {
   writeToDatabaseCaller,
   writeBillsToDatabase,
   writeEventsToDatabase
-} = require('../write.js');
+} = require('../postgresWrite.js');
 
 const testArrayReturned = [
   {

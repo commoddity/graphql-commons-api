@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "start": "nodemon src/server.js",
-    "db:reset": "node bin/resetdb.js"
+    "db:reset": "node bin/resetdb.js",
+    "db:update_database": "node bin/updateDb.js"
   },
   "eslintConfig": {
     "camelcase": {
@@ -14,7 +15,7 @@
     }
   },
   "keywords": [],
-  "author": "",
+  "author": "Pascal van Leeuwen",
   "license": "ISC",
   "dependencies": {
     "apollo-server-express": "^2.11.0",

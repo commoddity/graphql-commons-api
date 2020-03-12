@@ -81,7 +81,7 @@ const BillType = new GraphQLObjectType({
     code: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'code' },
     title: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'title' },
     description: {
-      type: GraphQLNonNull(GraphQLString),
+      type: GraphQLString,
       sqlColumn: 'description'
     },
     introduced_date: { type: DateScalar, sqlColumn: 'introduced_date' },
