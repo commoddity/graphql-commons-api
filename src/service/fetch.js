@@ -73,8 +73,8 @@ const fetchDescription = async (fullTextUrl, billCode) => {
 const testUrl =
   'https://www.parl.ca/legisinfo/RSSFeed.aspx?download=rss&Language=E&source=LegislativeSummaryPublications';
 
-const fetchSummaryUrls = async (fullTextUrl) => {
-  const xml = await fetchXml(fullTextUrl);
+const fetchSummaryUrls = async (summariesUrl) => {
+  const xml = await fetchXml(summariesUrl);
   const json = parser.toJson(xml);
   const xmlObject = JSON.parse(json);
   const summaries = xmlObject.rss.channel.item;

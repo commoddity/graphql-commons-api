@@ -1,6 +1,8 @@
 const { GraphQLScalarType } = require('graphql');
 const moment = require('moment');
 
+// Custom Scalar type to accomodate either a Date object or undefined
+// as certain bills do not have an Introduced Date and will return undefined
 const dateOrUndefinedSerialize = (value) => {
   const formattedDate = moment(value, 'YYYY-MM-DD');
   if ((formattedDate.isValid(), true)) {

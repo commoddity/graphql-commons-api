@@ -13,7 +13,9 @@ const insertFetchedData = async (bills) => {
       );
     });
     const formattedBills = await Promise.all(promises);
-    return formattedBills;
+    return formattedBills.sort((a, b) =>
+      a.introduced_date < b.introduced_date ? 1 : -1
+    );
   } catch (err) {
     console.error(`Error inserting fetched data into bills: ${err}`);
   }

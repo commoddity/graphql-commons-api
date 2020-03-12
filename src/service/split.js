@@ -1,11 +1,16 @@
 const { formatDate, formatCode, formatTitle } = require('./format');
+const {
+  queryIfRowExists,
+  queryIfEventExists
+} = require('../helpers/queryHelpers');
 
-const splitBills = (array) => {
+const splitBills = async (array) => {
   const billsArray = [];
-  array.forEach((arrayItem) => {
+  for (arrayItem of array) {
+    const billCode = formatCode(arrayItem.description);
     const bill = {
       parliamentary_session_id: undefined,
-      code: formatCode(arrayItem.description),
+      code: billCode,
       title: formatTitle(arrayItem.description),
       description: undefined,
       introduced_date: undefined,
@@ -14,25 +19,44 @@ const splitBills = (array) => {
       full_text_url: undefined,
       passed: null
     };
-    if (!billsArray.some((savedBill) => savedBill.code === bill.code)) {
+    const billExistsInArray = billsArray.some(
+      (savedBill) => savedBill.code === bill.code
+    );
+    const billExistsinDb = await queryIfRowExists('bills', 'code', billCode);
+    if (!billExistsInArray && !billExistsinDb) {
+      console.log(
+        `Successfuly fetched Bill ${bill.code} from LEGISinfo server ...`
+      );
       billsArray.push(bill);
+    } else if (billExistsinDb) {
+      console.log(`Bill ${bill.code} already exists. Skipping ...`);
     }
-  });
-  return billsArray
-    .sort((a, b) => (a.introduced_date > b.introduced_date ? 1 : -1))
-    .sort((a, b) => (a.code > b.code ? 1 : -1));
+  }
+  return billsArray;
 };
 
-const splitEvents = (array) => {
+const splitEvents = async (array) => {
   const eventsArray = [];
-  array.forEach((arrayItem) => {
+  for (arrayItem of array) {
+    const billCode = formatCode(arrayItem.description);
+    const eventTitle = formatTitle(arrayItem.title);
     const event = {
-      bill_code: formatCode(arrayItem.description),
-      title: formatTitle(arrayItem.title),
+      bill_code: billCode,
+      title: eventTitle,
       publication_date: formatDate(arrayItem.pubDate)
     };
-    eventsArray.push(event);
-  });
+    const eventExists = await queryIfEventExists(billCode, eventTitle);
+    if (!eventExists) {
+      eventsArray.push(event);
+      console.log(
+        `Successfully fetched ${event.title} for Bill ${event.bill_code} from LEGISinfo server ...`
+      );
+    } else {
+      console.log(
+        `${event.title} for Bill ${event.bill_code} already exists. Skipping ...`
+      );
+    }
+  }
   return eventsArray;
 };
 
