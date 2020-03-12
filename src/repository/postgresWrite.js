@@ -1,20 +1,21 @@
 const { getLegisInfoCaller } = require('../service/writeToDbCallers');
-const { updateBillStatus } = require('../service/update');
-const {
-  queryLatestParliamentarySession,
-  queryUpdateBillPassed
-} = require('../helpers/queryHelpers');
+const { updateBillStatus, updateSummaryUrls } = require('../service/update');
+const { queryLatestParliamentarySession } = require('../helpers/queryHelpers');
 
 const { db } = require('../pgAdaptor');
 
-const writeToDatabaseCaller = async (url) => {
+const writeToDatabaseCaller = async (legisinfoUrl, summariesUrl) => {
   console.log(`Updating Database at ${new Date()} ...`);
-  const { formattedBillsArray, eventsArray } = await getLegisInfoCaller(url);
+  const { formattedBillsArray, eventsArray } = await getLegisInfoCaller(
+    legisinfoUrl
+  );
   try {
     await writeBillsToDatabase(formattedBillsArray);
     console.log(`Saved ${formattedBillsArray.length} bills to database ...\n`);
     await writeEventsToDatabase(eventsArray);
     console.log(`Saved ${eventsArray.length} events to database ...\n`);
+    await updateSummaryUrls(summariesUrl);
+    console.log(`Done checking for legislative summaries ...\n`);
     console.log(`Finished Updating Database at: ${new Date()} - Success!`);
   } catch (err) {
     console.error(
