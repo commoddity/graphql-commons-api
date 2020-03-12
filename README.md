@@ -65,10 +65,6 @@ Notifications are sent out using the following web services:
 - [Mitch Lum](https://github.com/mxmitch)
 - [Pascal van Leeuwen](https://github.com/Commoddity/)
 
-# Entity Relationship Diagram
-
-![Commons ERD](./docs/commons-ERD.png)
-
 ### Setup
 
 - install `yarn`
