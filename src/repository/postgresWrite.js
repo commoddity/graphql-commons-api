@@ -1,5 +1,9 @@
 const { getLegisInfoCaller } = require('../service/writeToDbCallers');
-const { queryLatestParliamentarySession } = require('../helpers/queryHelpers');
+const { updateBillStatus } = require('../service/update');
+const {
+  queryLatestParliamentarySession,
+  queryUpdateBillPassed
+} = require('../helpers/queryHelpers');
 
 const { db } = require('../pgAdaptor');
 
@@ -62,6 +66,7 @@ const writeEventsToDatabase = async (eventsArray) => {
     const query = `INSERT INTO events (bill_code, title, publication_date, created_at)
                   VALUES ($1, $2, $3, (to_timestamp(${Date.now()} / 1000.0)))`;
     const values = [event.bill_code, event.title, event.publication_date];
+    updateBillStatus(event);
     promises.push(
       db
         .query(query, values)

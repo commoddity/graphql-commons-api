@@ -60,4 +60,25 @@ const splitEvents = async (array) => {
   return eventsArray;
 };
 
-module.exports = { splitBills, splitEvents };
+const splitSummaries = (array) => {
+  const summariesArray = [];
+  array.forEach((summary) => {
+    const summaryBillCode = summary.title.includes(
+      'Legislative Summary Published for '
+    )
+      ? summary.title
+          .split('Legislative Summary Published for ')[1]
+          .split(',')[0]
+      : summary.title
+          .split('Legislative Short Summary Published for ')[1]
+          .split(',')[0];
+    const summaryObject = {
+      code: summaryBillCode,
+      url: summary.link
+    };
+    summariesArray.push(summaryObject);
+  });
+  return summariesArray;
+};
+
+module.exports = { splitBills, splitEvents, splitSummaries };

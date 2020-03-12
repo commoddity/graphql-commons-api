@@ -53,9 +53,23 @@ const queryLatestParliamentarySession = async () => {
   }
 };
 
+// Database update queries. These queries modify database tables.
+const queryUpdateBillPassed = async (billCode, status) => {
+  try {
+    const query = `UPDATE bills SET passed = '${status}' WHERE code = '${billCode}'`;
+    await db.query(query);
+    return;
+  } catch (err) {
+    console.error(
+      `An error occured while updating bill ${billCode}'s status to ${status}: ${err}`
+    );
+  }
+};
+
 module.exports = {
   queryIfRowExists,
   queryIfRowContains,
   queryIfEventExists,
-  queryLatestParliamentarySession
+  queryLatestParliamentarySession,
+  queryUpdateBillPassed
 };

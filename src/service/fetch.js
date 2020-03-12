@@ -77,25 +77,8 @@ const fetchSummaryUrls = async (summariesUrl) => {
   const xml = await fetchXml(summariesUrl);
   const json = parser.toJson(xml);
   const xmlObject = JSON.parse(json);
-  const summaries = xmlObject.rss.channel.item;
-  const summaryArray = [];
-  summaries.forEach((summary) => {
-    const summaryBillCode = summary.title.includes(
-      'Legislative Summary Published for '
-    )
-      ? summary.title
-          .split('Legislative Summary Published for ')[1]
-          .split(',')[0]
-      : summary.title
-          .split('Legislative Short Summary Published for ')[1]
-          .split(',')[0];
-    const summaryObject = {
-      code: summaryBillCode,
-      url: summary.link
-    };
-    summaryArray.push(summaryObject);
-  });
-  return summaryArray;
+  const summariesArray = xmlObject.rss.channel.item;
+  return summariesArray;
 };
 
 const fetchSummaryUrl = async (summaryArray, billCode) => {
