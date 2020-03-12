@@ -66,10 +66,23 @@ const queryUpdateBillPassed = async (billCode, status) => {
   }
 };
 
+const queryUpdateSummaryUrl = async (billCode, summaryUrl) => {
+  try {
+    const query = `UPDATE bills SET summary_url = '${summaryUrl}' WHERE code = '${billCode}'`;
+    await db.query(query);
+    return;
+  } catch (err) {
+    console.error(
+      `An error occured while updating bill ${billCode}'s summary URL: ${err}`
+    );
+  }
+};
+
 module.exports = {
   queryIfRowExists,
   queryIfRowContains,
   queryIfEventExists,
   queryLatestParliamentarySession,
-  queryUpdateBillPassed
+  queryUpdateBillPassed,
+  queryUpdateSummaryUrl
 };

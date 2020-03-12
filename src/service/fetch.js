@@ -70,23 +70,18 @@ const fetchDescription = async (fullTextUrl, billCode) => {
   }
 };
 
-const testUrl =
-  'https://www.parl.ca/legisinfo/RSSFeed.aspx?download=rss&Language=E&source=LegislativeSummaryPublications';
-
 const fetchSummaryUrls = async (summariesUrl) => {
-  const xml = await fetchXml(summariesUrl);
-  const json = parser.toJson(xml);
-  const xmlObject = JSON.parse(json);
-  const summariesArray = xmlObject.rss.channel.item;
-  return summariesArray;
-};
-
-const fetchSummaryUrl = async (summaryArray, billCode) => {
-  summaryArray.forEach((summary) => {
-    if (summary.code === billCode) {
-      return summary.url;
-    }
-  });
+  try {
+    const xml = await fetchXml(summariesUrl);
+    const json = parser.toJson(xml);
+    const xmlObject = JSON.parse(json);
+    const summariesArray = xmlObject.rss.channel.item;
+    return summariesArray;
+  } catch (err) {
+    console.error(
+      `An error occurred while fetching the legislative summary feed: ${err}`
+    );
+  }
 };
 
 module.exports = {
@@ -94,6 +89,5 @@ module.exports = {
   fetchFullTextUrl,
   fetchIntroducedDate,
   fetchDescription,
-  fetchSummaryUrls,
-  fetchSummaryUrl
+  fetchSummaryUrls
 };
