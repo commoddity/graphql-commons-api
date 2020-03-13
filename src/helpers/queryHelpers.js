@@ -1,8 +1,8 @@
-require('dotenv/config');
-
+// Import database connection object
 const { db } = require('../pgAdaptor');
 
-// Re-usable queries. Can be passed table, column and value for flexibility. May be used on any table.
+// Re-usable queries. Can be passed table, column and value for flexibility.
+// May be used on any table/column.
 const queryIfRowExists = async (table, column, value) => {
   try {
     const query = `SELECT EXISTS(SELECT 1 FROM ${table} WHERE ${column}='${value}')`;
@@ -10,7 +10,7 @@ const queryIfRowExists = async (table, column, value) => {
     return rowQueryResult.exists;
   } catch (err) {
     console.error(
-      `An error occured while querying whether value exists: ${err}`
+      `An error occurred while querying whether value exists: ${err}`
     );
   }
 };
@@ -22,12 +22,12 @@ const queryIfRowContains = async (table, column, value) => {
     return rowQueryResult.exists;
   } catch (err) {
     console.error(
-      `An error occured while querying whether value exists: ${err}`
+      `An error occurred while querying whether value exists: ${err}`
     );
   }
 };
 
-//Specific queries. May only be used in relation to specific tables.
+// Specific queries. May only be used in relation to specific tables/columns.
 const queryIfEventExists = async (billCode, eventTitle) => {
   try {
     const query = `SELECT EXISTS(SELECT 1 FROM events WHERE bill_code='${billCode}' AND title='${eventTitle}')`;
@@ -35,7 +35,7 @@ const queryIfEventExists = async (billCode, eventTitle) => {
     return rowQueryResult.exists;
   } catch (err) {
     console.error(
-      `An error occured while querying whether event exists: ${err}`
+      `An error occurred while querying whether event exists: ${err}`
     );
   }
 };
@@ -48,12 +48,12 @@ const queryLatestParliamentarySession = async () => {
     return sessionQueryResult.id;
   } catch (err) {
     console.error(
-      `An error occured while querying latest parliamentary session: ${err}`
+      `An error occurred while querying latest parliamentary session: ${err}`
     );
   }
 };
 
-// Database update queries. These queries modify database tables.
+// Database update queries. These queries modify specific database tables.
 const queryUpdateBillPassed = async (billCode, status) => {
   try {
     const query = `UPDATE bills SET passed = '${status}' WHERE code = '${billCode}'`;
@@ -61,7 +61,7 @@ const queryUpdateBillPassed = async (billCode, status) => {
     return;
   } catch (err) {
     console.error(
-      `An error occured while updating bill ${billCode}'s status to ${status}: ${err}`
+      `An error occurred while updating bill ${billCode}'s status to ${status}: ${err}`
     );
   }
 };
@@ -73,7 +73,7 @@ const queryUpdateSummaryUrl = async (billCode, summaryUrl) => {
     return;
   } catch (err) {
     console.error(
-      `An error occured while updating bill ${billCode}'s summary URL: ${err}`
+      `An error occurred while updating bill ${billCode}'s summary URL: ${err}`
     );
   }
 };

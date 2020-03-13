@@ -4,10 +4,12 @@
   "description": "API server for the Commons App",
   "main": "server.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --silent",
+    "testdb:reset": "node bin/testResetDb.js",
+    "testdb:update": "NODE_ENV='test' node bin/updateDb.js",
     "start": "nodemon src/server.js",
-    "db:reset": "node bin/resetdb.js",
-    "db:update_database": "node bin/updateDb.js"
+    "db:reset": "node bin/resetDb.js",
+    "db:update": "node bin/updateDb.js"
   },
   "eslintConfig": {
     "camelcase": {

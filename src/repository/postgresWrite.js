@@ -1,13 +1,15 @@
-const { getLegisInfoCaller } = require('../service/writeToDbCallers');
+const { getLegisInfoCaller } = require('../service/getDataCallers');
 const { updateBillStatus, updateSummaryUrls } = require('../service/update');
 const { queryLatestParliamentarySession } = require('../helpers/queryHelpers');
 
 const { db } = require('../pgAdaptor');
 
-const writeToDatabaseCaller = async (legisinfoUrl, summariesUrl) => {
+// Responsible for calling all of the functions to write fetched bills and events to DB
+const writeToDatabaseCaller = async (legisInfoUrl, summariesUrl) => {
   console.log(`Updating Database at ${new Date()} ...`);
+  console.log(legisInfoUrl);
   const { formattedBillsArray, eventsArray } = await getLegisInfoCaller(
-    legisinfoUrl
+    legisInfoUrl
   );
   try {
     await writeBillsToDatabase(formattedBillsArray);
@@ -15,7 +17,6 @@ const writeToDatabaseCaller = async (legisinfoUrl, summariesUrl) => {
     await writeEventsToDatabase(eventsArray);
     console.log(`Saved ${eventsArray.length} events to database ...\n`);
     await updateSummaryUrls(summariesUrl);
-    console.log(`Done checking for legislative summaries ...\n`);
     console.log(`Finished Updating Database at: ${new Date()} - Success!`);
   } catch (err) {
     console.error(
@@ -24,8 +25,10 @@ const writeToDatabaseCaller = async (legisinfoUrl, summariesUrl) => {
   }
 };
 
+// Executes DB queries to save bills to database
 const writeBillsToDatabase = async (billsArray) => {
   console.log('Saving bills to database ...');
+  // Gets the latest parliamentary session from the DB
   const parliamentarySession = await queryLatestParliamentarySession();
   const promises = [];
   billsArray.forEach((bill) => {
@@ -60,6 +63,7 @@ const writeBillsToDatabase = async (billsArray) => {
   );
 };
 
+// Executes DB queries to save bills to database
 const writeEventsToDatabase = async (eventsArray) => {
   console.log('Saving events to database ...');
   const promises = [];
@@ -67,6 +71,7 @@ const writeEventsToDatabase = async (eventsArray) => {
     const query = `INSERT INTO events (bill_code, title, publication_date, created_at)
                   VALUES ($1, $2, $3, (to_timestamp(${Date.now()} / 1000.0)))`;
     const values = [event.bill_code, event.title, event.publication_date];
+    // Updates related bill's 'passed' column if it has been passed or defeated
     updateBillStatus(event);
     promises.push(
       db
@@ -88,6 +93,10 @@ const writeEventsToDatabase = async (eventsArray) => {
       `Failed to add ${eventsArray.length} events to database ... ${err}`
     )
   );
+};
+
+const writeBillCategoriesToDatabase = async (billsArray) => {
+  console.log('');
 };
 
 module.exports = {

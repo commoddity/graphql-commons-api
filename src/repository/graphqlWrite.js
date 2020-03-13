@@ -31,7 +31,7 @@
 //   });
 //   Promise.all(promises).catch((err) =>
 //     console.error(
-//       `An error occured during the GraphQL request to the API endpoint while adding bills: ${err}`
+//       `An error occurred during the GraphQL request to the API endpoint while adding bills: ${err}`
 //     )
 //   );
 // };
@@ -54,7 +54,7 @@
 //   });
 //   Promise.all(promises).catch((err) =>
 //     console.error(
-//       `An error occured during the GraphQL request to the API endpoint while adding events: ${err}`
+//       `An error occurred during the GraphQL request to the API endpoint while adding events: ${err}`
 //     )
 //   );
 // };

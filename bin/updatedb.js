@@ -6,4 +6,7 @@ const legisInfoUrl =
 const summariesUrl =
   'https://www.parl.ca/legisinfo/RSSFeed.aspx?download=rss&Language=E&source=LegislativeSummaryPublications';
 
+// Mapped to 'yarn db:update_database' script in package.json to call database update chain
+// DEV NOTE ---> WILL BE ADDED TO SCHEDULED JOB ONCE APP DEPLOYED - EXECUTE EVERY 24 HOURS
+
 writeToDatabaseCaller(legisInfoUrl, summariesUrl);

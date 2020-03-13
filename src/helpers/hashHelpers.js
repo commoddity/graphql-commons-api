@@ -1,3 +1,4 @@
+// DEV NOTE ---> ONLY EXISTS TO SIMULATE FRONT END PASSWORD HASHING - DELETE ONCE THAT IS SET UP
 const bcrypt = require('bcrypt');
 
 const hashPassword = async (password) =>

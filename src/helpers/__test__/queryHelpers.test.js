@@ -6,7 +6,9 @@ const {
   queryIfRowExists,
   queryIfRowContains,
   queryIfEventExists,
-  queryLatestParliamentarySession
+  queryLatestParliamentarySession,
+  queryUpdateBillPassed,
+  queryUpdateSummaryUrl
 } = require('../queryHelpers');
 
 describe('queryIfRowExists', () => {
@@ -65,6 +67,22 @@ describe('queryLatestParliamentarySession', () => {
   test('queryLatestParliamentarySession should return the current parliamentary session', () => {
     return queryLatestParliamentarySession().then((data) => {
       expect(data).toEqual(1);
+    });
+  });
+});
+
+describe('queryUpdateBillPassed', () => {
+  test('queryUpdateBillPassed should return if passed existing bill and valid status', () => {
+    return queryUpdateBillPassed('C-2', true).then((data) => {
+      expect(data).toBeUndefined();
+    });
+  });
+});
+
+describe('queryUpdateSummaryUrl', () => {
+  test('queryUpdateSummaryUrl should return if passed existing bill and valid string', () => {
+    return queryUpdateSummaryUrl('C-2', 'https://www.dogs.com').then((data) => {
+      expect(data).toBeUndefined();
     });
   });
 });
