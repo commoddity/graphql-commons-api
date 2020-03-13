@@ -7,6 +7,7 @@ const {
   fetchDescription
 } = require('./fetch');
 
+// Returns the parsed array of bills/events from the source XML (with redundant tags removed)
 const formatXml = (xml) => {
   try {
     const json = parser.toJson(xml);
@@ -18,17 +19,22 @@ const formatXml = (xml) => {
   }
 };
 
+// Formats the fetched dates to a consistent format
 const formatDate = (date) => {
   return moment(date)
     .utcOffset('-0400')
     .format(`YYYY/MM/DD`);
 };
 
+// Returns a bill's code from the 'description' field
 const formatCode = (description) =>
   description.substr(0, description.indexOf(','));
 
+// Returns the title of a bill or event from the 'description' or 'title' field
 const formatTitle = (title) => title.split(/, (.+)/)[1];
 
+// Fetches full text URL, introduced date and description via web scraping
+// Inserts values into each bill objects and returns the updated object
 const formatBillWithFetchedData = async (bill) => {
   try {
     const fullTextUrl = await fetchFullTextUrl(bill.page_url, bill.code);

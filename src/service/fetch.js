@@ -2,6 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const parser = require('xml2json');
 
+// Returns the XML document from a given URL
 const fetchXml = async (url) => {
   try {
     const response = await axios.get(url);
@@ -12,15 +13,16 @@ const fetchXml = async (url) => {
   }
 };
 
+// Returns the latest full text URL from a bill page
 const fetchFullTextUrl = async (pageUrl, billCode) => {
   try {
     const response = await axios.get(pageUrl);
-    const bill_page = cheerio.load(response.data);
-    const link = bill_page('a:contains("Latest Publication")').attr('href');
-    const full_text_url = link ? 'https:' + link : undefined;
+    const billPage = cheerio.load(response.data);
+    const link = billPage('a:contains("Latest Publication")').attr('href');
+    const fullTextUrl = link ? 'https:' + link : undefined;
     !link &&
       console.log(`No full text available for Bill ${billCode}. Skipping ...`);
-    return full_text_url;
+    return fullTextUrl;
   } catch (err) {
     console.error(
       `An error occurred while fetching full text url for Bill ${billCode}: ${err}`
@@ -28,11 +30,12 @@ const fetchFullTextUrl = async (pageUrl, billCode) => {
   }
 };
 
+// Returns the date that a bill was introduced from a bill page
 const fetchIntroducedDate = async (pageUrl, billCode) => {
   try {
     const response = await axios.get(pageUrl);
-    const bill_page = cheerio.load(response.data);
-    const introducedDateFetch = bill_page(
+    const billPage = cheerio.load(response.data);
+    const introducedDateFetch = billPage(
       'div:contains("Introduction and First Reading")'
     )
       .last()
@@ -55,13 +58,15 @@ const fetchIntroducedDate = async (pageUrl, billCode) => {
   }
 };
 
+// Returns the description from the summary of the full text of a given bill
 const fetchDescription = async (fullTextUrl, billCode) => {
   try {
     const response = await axios.get(fullTextUrl);
-    const bill_page = cheerio.load(response.data);
-    const summaryDiv = bill_page('div:contains("This enactment")')
+    const billPage = cheerio.load(response.data);
+    const summaryDiv = billPage('div:contains("This enactment")')
       .last()
       .text();
+    // Regex removes trailing space and newline characters
     return summaryDiv.replace(/\s+/g, ' ').trim();
   } catch (err) {
     console.error(
@@ -70,6 +75,7 @@ const fetchDescription = async (fullTextUrl, billCode) => {
   }
 };
 
+// Returns the array of legislative summaries of bills from the parliament website
 const fetchSummaryUrls = async (summariesUrl) => {
   try {
     const xml = await fetchXml(summariesUrl);
@@ -84,10 +90,31 @@ const fetchSummaryUrls = async (summariesUrl) => {
   }
 };
 
+const fetchFullText = async (fullTextUrl, billCode) => {
+  try {
+    const response = await axios.get(fullTextUrl);
+    const fullTextPage = cheerio.load(response.data);
+    const xmlPageLink = fullTextPage('a.btn-export-xml:contains("XML")').attr(
+      'href'
+    );
+    const fullTextUrlJoined = 'https://www.parl.ca' + xmlPageLink;
+    const fullTextXml = await fetchXml(fullTextUrlJoined);
+    const fullTextRaw = cheerio
+      .load(fullTextXml)('text')
+      .text();
+    return fullTextRaw;
+  } catch (err) {
+    console.error(
+      `An error occurred while fetching full text of Bill ${billCode}: ${err}`
+    );
+  }
+};
+
 module.exports = {
   fetchXml,
   fetchFullTextUrl,
   fetchIntroducedDate,
   fetchDescription,
-  fetchSummaryUrls
+  fetchSummaryUrls,
+  fetchFullText
 };
