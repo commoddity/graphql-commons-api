@@ -6,35 +6,35 @@ const fs = require('fs');
 const Client = require('pg-native');
 
 // PG connection setup
-const connectionString = `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@localhost:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`;
+const connectionString = `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@localhost:${process.env.POSTGRES_PORT}/${process.env.TEST_POSTGRES_DB}`;
 const client = new Client();
 
 // Loads the schema files from db/schema
 const runSchemaFiles = function() {
-  console.log(`-> DEVELOPMENT DATABASE RESET -> Loading Schema Files ...`);
+  console.log(`-> TEST DATABASE RESET -> Loading Schema Files ...`);
   const schemaFilenames = fs.readdirSync('./db/psql/schema');
 
   for (const fn of schemaFilenames) {
     const sql = fs.readFileSync(`./db/psql/schema/${fn}`, 'utf8');
-    console.log(`\t-> DEVELOPMENT DATABASE RESET -> Running ${fn}`);
+    console.log(`\t-> TEST DATABASE RESET -> Running ${fn}`);
     client.querySync(sql);
   }
 };
 
 const runSeedFiles = function() {
-  console.log(`-> DEVELOPMENT DATABASE RESET -> Loading Seeds ...`);
+  console.log(`-> TEST DATABASE RESET -> Loading Seeds ...`);
   const schemaFilenames = fs.readdirSync('./db/psql/seeds');
 
   for (const fn of schemaFilenames) {
     const sql = fs.readFileSync(`./db/psql/seeds/${fn}`, 'utf8');
-    console.log(`\t-> DEVELOPMENT DATABASE RESET -> Running ${fn}`);
+    console.log(`\t-> TEST DATABASE RESET -> Running ${fn}`);
     client.querySync(sql);
   }
 };
 
 try {
   console.log(
-    `-> DEVELOPMENT DATABASE RESET -> Connecting to PG using ${connectionString} ...`
+    `-> TEST DATABASE RESET -> Connecting to PG using ${connectionString} ...`
   );
   client.connectSync(connectionString);
   runSchemaFiles();

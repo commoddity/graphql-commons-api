@@ -7,7 +7,8 @@ const {
   formatDate,
   formatCode,
   formatTitle,
-  formatBillWithFetchedData
+  formatBillWithFetchedData,
+  formatUclassifyData
 } = require('../format');
 
 describe('formatXml', () => {
@@ -114,5 +115,34 @@ describe('formatBillWithFetchedData', () => {
     return formatBillWithFetchedData(testBill).then((data) => {
       expect(data).toEqual(testBillReturned);
     });
+  });
+});
+
+describe('formatUclassifyData', () => {
+  const testProbability = [
+    { className: 'agriculture_environment', p: 8.97824e-7 },
+    { className: 'arts_culture', p: 1.67534e-8 },
+    { className: 'business_industry', p: 8.30721e-9 },
+    { className: 'economics_finance', p: 0.00000227311 },
+    { className: 'education_language', p: 2.07222e-8 },
+    { className: 'employment_labour', p: 1.16797e-7 },
+    { className: 'government_politics', p: 0.00000268622 },
+    { className: 'health_safety', p: 0.00000866958 },
+    { className: 'indigenous_affairs', p: 9.89012e-8 },
+    { className: 'information_communications', p: 4.30332e-7 },
+    { className: 'international_affairs', p: 8.68736e-7 },
+    { className: 'law_justice', p: 0.999757 },
+    { className: 'science_technology', p: 5.99305e-7 },
+    { className: 'social_affairs', p: 0.000226015 }
+  ];
+
+  testProbabilityArray = ['law_justice'];
+
+  test('formatUclassifyData should return the categories with the highest probabilities', () => {
+    expect(formatUclassifyData(testProbability)).toEqual(testProbabilityArray);
+  });
+
+  test('formatUclassifyData should return an array', () => {
+    expect(formatUclassifyData(testProbability)).toBeInstanceOf(Array);
   });
 });
