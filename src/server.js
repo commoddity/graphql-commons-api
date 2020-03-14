@@ -1,4 +1,9 @@
-require('dotenv/config');
+// Load in .env variables
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
+//Import server/graphql dependencies
 const graphql = require('graphql');
 const express = require('express');
 const session = require('express-session');

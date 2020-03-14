@@ -51,10 +51,27 @@ const formatBillWithFetchedData = async (bill) => {
   }
 };
 
+// Returns an array of matched categories based on the probabilities returned
+// Adds categories if they exceed the minThreshold and until the maxThreshold is met
+const formatUclassifyData = (probabilityArray) => {
+  const maxThreshold = 0.7;
+  const minThreshold = 0.15;
+  let total_probability = 0;
+  const billCategories = [];
+  const sortedArray = probabilityArray.sort((a, b) => a.p - b.p).reverse();
+  for (category of sortedArray) {
+    category.p >= minThreshold && billCategories.push(category.className);
+    total_probability += category.p;
+    if (total_probability >= maxThreshold) break;
+  }
+  return billCategories;
+};
+
 module.exports = {
   formatXml,
   formatDate,
   formatCode,
   formatTitle,
-  formatBillWithFetchedData
+  formatBillWithFetchedData,
+  formatUclassifyData
 };

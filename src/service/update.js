@@ -63,7 +63,6 @@ const updateSummaryUrls = async (url) => {
       );
     }
   }
-  console.log(`Done checking for legislative summaries ...\n`);
   return;
 };
 

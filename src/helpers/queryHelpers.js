@@ -73,7 +73,30 @@ const queryUpdateSummaryUrl = async (billCode, summaryUrl) => {
     return;
   } catch (err) {
     console.error(
-      `An error occurred while updating bill ${billCode}'s summary URL: ${err}`
+      `An error occurred while updating Bill ${billCode}'s summary URL: ${err}`
+    );
+  }
+};
+
+const queryUpdateBillCategory = async (code, categoriesArray) => {
+  try {
+    const bill = await db.query(`SELECT id FROM bills WHERE code = '${code}'`);
+    for (billCategory of categoriesArray) {
+      const category = await db.query(
+        `SELECT id FROM categories WHERE uclassify_class = '${billCategory}'`
+      );
+      const query = `INSERT INTO bill_categories (bill_id, category_id, created_at)
+                    VALUES ($1, $2, (to_timestamp(${Date.now()} / 1000.0)))`;
+      const values = [bill[0].id, category[0].id];
+      await db.query(query, values);
+      console.log(
+        `Successfully added category '${billCategory}' to Bill ${code} ...`
+      );
+    }
+    return;
+  } catch (err) {
+    console.error(
+      `An error occurred whule updating categories for Bill ${code}: ${err}`
     );
   }
 };
@@ -84,5 +107,6 @@ module.exports = {
   queryIfEventExists,
   queryLatestParliamentarySession,
   queryUpdateBillPassed,
-  queryUpdateSummaryUrl
+  queryUpdateSummaryUrl,
+  queryUpdateBillCategory
 };

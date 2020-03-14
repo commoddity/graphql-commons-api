@@ -90,7 +90,8 @@ const fetchSummaryUrls = async (summariesUrl) => {
   }
 };
 
-const fetchFullText = async (fullTextUrl, billCode) => {
+// Returns the raw text from the XML bill, in other words all text within <Text> tags
+const fetchFullText = async (fullTextUrl) => {
   try {
     const response = await axios.get(fullTextUrl);
     const fullTextPage = cheerio.load(response.data);
@@ -104,8 +105,32 @@ const fetchFullText = async (fullTextUrl, billCode) => {
       .text();
     return fullTextRaw;
   } catch (err) {
+    console.error(`An error occurred while fetching raw full text: ${err}`);
+  }
+};
+
+// Returns a probability array from the uClassify API for classifying a single bill
+// Each array has a range of probabilities for the 14 categories used by the app
+const fetchUclassifyData = async (fullTextRaw) => {
+  const fullTextArray = [fullTextRaw];
+  //Alter the relevant values in the .env file if different API username/key is needed.
+  const uClassifyUrl = `https://api.uclassify.com/v1/${process.env.UCLASSIFY_USERNAME}/${process.env.CLASSIFIER_NAME}/classify`;
+  body = {
+    texts: fullTextArray
+  };
+  let axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Token ${process.env.API_READ_KEY}`
+    }
+  };
+  try {
+    const response = await axios.post(uClassifyUrl, body, axiosConfig);
+    const classificationArray = response.data[0].classification;
+    return classificationArray;
+  } catch (err) {
     console.error(
-      `An error occurred while fetching full text of Bill ${billCode}: ${err}`
+      `An error occurred while attempting to fetch uClassify probability data: ${err}`
     );
   }
 };
@@ -116,5 +141,6 @@ module.exports = {
   fetchIntroducedDate,
   fetchDescription,
   fetchSummaryUrls,
-  fetchFullText
+  fetchFullText,
+  fetchUclassifyData
 };

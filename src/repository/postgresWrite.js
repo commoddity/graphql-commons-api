@@ -1,13 +1,17 @@
 const { getLegisInfoCaller } = require('../service/getDataCallers');
 const { updateBillStatus, updateSummaryUrls } = require('../service/update');
-const { queryLatestParliamentarySession } = require('../helpers/queryHelpers');
+const { formatUclassifyData } = require('../service/format');
+const { fetchFullText, fetchUclassifyData } = require('../service/fetch');
+const {
+  queryLatestParliamentarySession,
+  queryUpdateBillCategory
+} = require('../helpers/queryHelpers');
 
 const { db } = require('../pgAdaptor');
 
 // Responsible for calling all of the functions to write fetched bills and events to DB
 const writeToDatabaseCaller = async (legisInfoUrl, summariesUrl) => {
   console.log(`Updating Database at ${new Date()} ...`);
-  console.log(legisInfoUrl);
   const { formattedBillsArray, eventsArray } = await getLegisInfoCaller(
     legisInfoUrl
   );
@@ -17,6 +21,8 @@ const writeToDatabaseCaller = async (legisInfoUrl, summariesUrl) => {
     await writeEventsToDatabase(eventsArray);
     console.log(`Saved ${eventsArray.length} events to database ...\n`);
     await updateSummaryUrls(summariesUrl);
+    console.log(`Done checking for legislative summaries ...\n`);
+    await writeBillCategoriesToDatabase(formattedBillsArray);
     console.log(`Finished Updating Database at: ${new Date()} - Success!`);
   } catch (err) {
     console.error(
@@ -95,12 +101,31 @@ const writeEventsToDatabase = async (eventsArray) => {
   );
 };
 
+// Calls functions to perform the following actions:
+// Fetches raw full text for every bill in the current bills array
+// Passes the test to uClassify to receive category probabilities
+// Executes DB queries to relate these categories to bills
 const writeBillCategoriesToDatabase = async (billsArray) => {
-  console.log('');
+  console.log('Saving bill categories from uClassify ...');
+  for (bill of billsArray) {
+    if (bill.full_text_url) {
+      try {
+        const fullTextRaw = await fetchFullText(bill.full_text_url);
+        const classificationArray = await fetchUclassifyData(fullTextRaw);
+        const billCategories = formatUclassifyData(classificationArray);
+        await queryUpdateBillCategory(bill.code, billCategories);
+      } catch (err) {
+        `An error occurred while adding categories to Bill ${bill.code}: ${err}`;
+      }
+    }
+  }
+  console.log(`Finished saving categories for ${billsArray.length} bills ...`);
+  return;
 };
 
 module.exports = {
   writeToDatabaseCaller,
   writeBillsToDatabase,
-  writeEventsToDatabase
+  writeEventsToDatabase,
+  writeBillCategoriesToDatabase
 };
