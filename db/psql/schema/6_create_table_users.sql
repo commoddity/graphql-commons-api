@@ -9,9 +9,9 @@ CREATE TABLE users (
   email VARCHAR (255) NOT NULL UNIQUE,
   phone_number BIGINT,
   postal_code VARCHAR (255),
-  email_notification VARCHAR (25),
-  sms_notification VARCHAR (25),
-  active BOOLEAN,
+  email_notification INT,
+  sms_notification INT,
+  active BOOLEAN DEFAULT true,
   created_at TIMESTAMP
 );
 

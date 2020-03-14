@@ -10,6 +10,7 @@ const {
   GraphQLBoolean
 } = graphql;
 const { DateScalar } = require('./scalars.js');
+const { notificationEnumType } = require('./enums.js');
 const { GraphQLDateTime } = graphqldate;
 
 //GraphQL types are defined below
@@ -211,10 +212,13 @@ const UserType = new GraphQLObjectType({
     email: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'email' },
     phone_number: { type: GraphQLInt, sqlColumn: 'phone_number' },
     email_notification: {
-      type: GraphQLString,
+      type: notificationEnumType,
       sqlColumn: 'email_notification'
     },
-    sms_notification: { type: GraphQLString, sqlColumn: 'sms_notification' },
+    sms_notification: {
+      type: notificationEnumType,
+      sqlColumn: 'sms_notification'
+    },
     active: { type: GraphQLBoolean, sqlColumn: 'active' },
     created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' },
     bills: {

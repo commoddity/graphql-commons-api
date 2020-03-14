@@ -32,8 +32,6 @@ const splitBills = async (array) => {
         `Successfuly fetched Bill ${bill.code} from LEGISinfo server ...`
       );
       billsArray.push(bill);
-    } else if (billExistsinDb) {
-      console.log(`Bill ${bill.code} already exists. Skipping ...`);
     }
   }
   return billsArray;
@@ -58,10 +56,6 @@ const splitEvents = async (array) => {
       console.log(
         `Successfully fetched ${event.title} for Bill ${event.bill_code} from LEGISinfo server ...`
       );
-    } else {
-      console.log(
-        `${event.title} for Bill ${event.bill_code} already exists. Skipping ...`
-      );
     }
   }
   return eventsArray;
@@ -72,20 +66,16 @@ const splitEvents = async (array) => {
 const splitSummaries = (array) => {
   const summariesArray = [];
   array.forEach((summary) => {
-    const summaryBillCode = summary.title.includes(
-      'Legislative Summary Published for '
-    )
-      ? summary.title
-          .split('Legislative Summary Published for ')[1]
-          .split(',')[0]
-      : summary.title
-          .split('Legislative Short Summary Published for ')[1]
-          .split(',')[0];
-    const summaryObject = {
-      code: summaryBillCode,
-      url: summary.link
-    };
-    summariesArray.push(summaryObject);
+    if (summary.title.includes('Legislative Summary Published for ')) {
+      const summaryBillCode = summary.title
+        .split('Legislative Summary Published for ')[1]
+        .split(',')[0];
+      const summaryObject = {
+        code: summaryBillCode,
+        url: summary.link
+      };
+      summariesArray.push(summaryObject);
+    }
   });
   return summariesArray;
 };

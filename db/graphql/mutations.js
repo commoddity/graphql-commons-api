@@ -16,6 +16,7 @@ const {
   GraphQLBoolean
 } = graphql;
 const { DateScalar } = require('./scalars.js');
+const { notificationEnumType } = require('./enums.js');
 const { GraphQLDateTime } = graphqldate;
 
 const { db } = require('../../src/pgAdaptor');
@@ -161,8 +162,8 @@ const RootMutation = new GraphQLObjectType({
         password: { type: GraphQLNonNull(GraphQLString) },
         email: { type: GraphQLNonNull(GraphQLString) },
         phone_number: { type: GraphQLInt },
-        email_notification: { type: GraphQLString },
-        sms_notification: { type: GraphQLString },
+        email_notification: { type: notificationEnumType },
+        sms_notification: { type: notificationEnumType },
         active: { type: GraphQLBoolean },
         created_at: { type: GraphQLDateTime }
       },
