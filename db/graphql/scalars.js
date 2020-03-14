@@ -4,7 +4,7 @@ const moment = require('moment');
 // Custom Scalar type to accomodate either a Date object or undefined
 // as certain bills do not have an Introduced Date and will return undefined
 const dateOrUndefinedSerialize = (value) => {
-  const formattedDate = moment(value, 'YYYY-MM-DD');
+  const formattedDate = moment(value, 'YYYY/MM/DD');
   if ((formattedDate.isValid(), true)) {
     return formattedDate;
   } else if (value === 'undefined') {
@@ -15,7 +15,7 @@ const dateOrUndefinedSerialize = (value) => {
 };
 
 const dateOrUndefinedParseValue = (value) => {
-  const formattedDate = moment(value, 'YYYY-MM-DD');
+  const formattedDate = moment(value, 'YYYY/MM/DD');
   if ((formattedDate.isValid(), true)) {
     return formattedDate;
   } else if (value === 'undefined') {
@@ -26,7 +26,7 @@ const dateOrUndefinedParseValue = (value) => {
 };
 
 const dateOrUndefinedParseLiteral = (ast) => {
-  const formattedDate = moment(ast.value, 'YYYY-MM-DD');
+  const formattedDate = moment(ast.value, 'YYYY/MM/DD');
   if ((formattedDate.isValid(), true)) {
     return formattedDate;
   } else if (ast.value === 'undefined') {
