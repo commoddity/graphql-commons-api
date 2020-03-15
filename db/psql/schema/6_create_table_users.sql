@@ -11,7 +11,7 @@ CREATE TABLE users (
   postal_code VARCHAR (255),
   email_notification INT,
   sms_notification INT,
-  active BOOLEAN DEFAULT true,
+  active BOOLEAN,
   created_at TIMESTAMP
 );
 

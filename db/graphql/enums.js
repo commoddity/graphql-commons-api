@@ -1,6 +1,6 @@
 const { GraphQLEnumType } = require('graphql');
 
-const notificationEnumType = new GraphQLEnumType({
+const NotificationEnumType = new GraphQLEnumType({
   name: 'NotificationEnum',
   values: {
     DAILY: {
@@ -18,4 +18,4 @@ const notificationEnumType = new GraphQLEnumType({
   }
 });
 
-module.exports = { notificationEnumType };
+module.exports = { NotificationEnumType };

@@ -16,7 +16,7 @@ const {
   GraphQLBoolean
 } = graphql;
 const { DateScalar } = require('./scalars.js');
-const { notificationEnumType } = require('./enums.js');
+const { NotificationEnumType } = require('./enums.js');
 const { GraphQLDateTime } = graphqldate;
 
 const { db } = require('../../src/pgAdaptor');
@@ -162,8 +162,8 @@ const RootMutation = new GraphQLObjectType({
         password: { type: GraphQLNonNull(GraphQLString) },
         email: { type: GraphQLNonNull(GraphQLString) },
         phone_number: { type: GraphQLInt },
-        email_notification: { type: notificationEnumType },
-        sms_notification: { type: notificationEnumType },
+        email_notification: { type: NotificationEnumType },
+        sms_notification: { type: NotificationEnumType },
         active: { type: GraphQLBoolean },
         created_at: { type: GraphQLDateTime }
       },
@@ -184,7 +184,7 @@ const RootMutation = new GraphQLObjectType({
             args.phone_number,
             args.email_notification,
             args.sms_notification,
-            args.active
+            true
           ];
           const response = await db.query(query, values);
           console.log(
@@ -194,6 +194,27 @@ const RootMutation = new GraphQLObjectType({
         } catch (err) {
           console.error(`Failed to insert new user. ${err}`);
           throw new Error(`Failed to insert new user. ${err}`);
+        }
+      }
+    },
+    deleteUser: {
+      type: UserType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLInt) }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        try {
+          const query = `DELETE FROM users 
+                        WHERE (id = $1)`;
+          const values = [args.id];
+          const response = await db.query(query, values);
+          console.log(
+            `Successfully deleted user with id ${args.id} from database.`
+          );
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to delete user. ${err}`);
+          throw new Error(`Failed to delete user. ${err}`);
         }
       }
     },
@@ -260,7 +281,7 @@ const RootMutation = new GraphQLObjectType({
         }
       }
     },
-    removeUserBill: {
+    deleteUserBill: {
       type: UserBillType,
       args: {
         user_id: { type: GraphQLInt },

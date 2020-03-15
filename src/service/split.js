@@ -21,7 +21,7 @@ const splitBills = async (array) => {
       full_text_url: undefined,
       passed: null
     };
-    // Returns true if bill already has been saved to billsArray this update
+    // Returns true if bill has already been saved to billsArray this update
     const billExistsInArray = billsArray.some(
       (savedBill) => savedBill.code === bill.code
     );
@@ -49,9 +49,16 @@ const splitEvents = async (array) => {
       title: eventTitle,
       publication_date: formatDate(arrayItem.pubDate)
     };
+    // Returns true if event has already been saved to eventsArray this update
+    const eventExistsInArray = eventsArray.some(
+      (savedEvent) =>
+        savedEvent.code === event.code &&
+        savedEvent.title === event.title &&
+        savedEvent.publication_date === event.publication_date
+    );
     // Returns true if event for bill has already been saved to database in a previous update
-    const eventExists = await queryIfEventExists(billCode, eventTitle);
-    if (!eventExists) {
+    const eventExistsInDb = await queryIfEventExists(billCode, eventTitle);
+    if (!eventExistsInArray && !eventExistsInDb) {
       eventsArray.push(event);
       console.log(
         `Successfully fetched ${event.title} for Bill ${event.bill_code} from LEGISinfo server ...`
