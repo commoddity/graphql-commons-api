@@ -367,7 +367,8 @@ const RootMutation = new GraphQLObjectType({
               password
             });
             await context.login(user);
-            console.log(`User successfully logged in using email: ${email}`);
+            console.log('USER ID', context.req.session.passport.user);
+            console.log('USER OBJECT', context.req.user);
             return user;
           } catch (err) {
             console.error(`Failed to log in user with email: ${email}. ${err}`);
@@ -380,13 +381,11 @@ const RootMutation = new GraphQLObjectType({
     },
     logoutUser: {
       type: UserType,
-      args: {
-        id: { type: GraphQLNonNull(GraphQLInt) }
-      },
       resolve: async (parent, args, context, resolveInfo) => {
         try {
           await context.logout();
-          console.log(`Successfully logged out user with id ${args.id}`);
+          await context.req.session.destroy();
+          console.log(`Successfuly logged out user.`);
         } catch (err) {
           console.error(`Failed to log out user. ${err}`);
           throw new Error(`Failed to log out user. ${err}`);

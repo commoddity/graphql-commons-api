@@ -2,6 +2,8 @@ const graphql = require('graphql');
 const joinMonster = require('join-monster');
 const sqlString = require('sqlstring');
 
+const { getHeaderAndParseCookie } = require('../../src/helpers/parseHelpers');
+
 // GraphQL Data Types
 const {
   GraphQLObjectType,
@@ -457,7 +459,7 @@ const RootQuery = new GraphQLObjectType({
           values.push(args.sms_notification);
         }
         if (args.active) {
-          whereClause.push(`${usersTable}.active = ${args.active}`);
+          whereClause.push(`${usersTable}.active = ?`);
           values.push(args.active);
         }
         const escapedString = sqlString.format(
@@ -521,7 +523,7 @@ const RootQuery = new GraphQLObjectType({
           values.push(args.sms_notification);
         }
         if (args.active) {
-          whereClause.push(`${userTable}.active = ${args.active}`);
+          whereClause.push(`${userTable}.active = ?`);
           values.push(args.active);
         }
         const escapedString = sqlString.format(
@@ -534,6 +536,16 @@ const RootQuery = new GraphQLObjectType({
         return joinMonster.default(resolveInfo, {}, (sql) => {
           return db.query(sql);
         });
+      }
+    },
+    // NEED TO FIGURE OUT WAY TO GET USER ID FROM SESSION AND/OR CONTEXT
+    currentUser: {
+      type: UserType,
+      resolve: (parent, args, context, resolveInfo) => {
+        console.log(context);
+        const userId = context.req.session.passport.user;
+        console.log(context.req.session.passport.user);
+        return userId;
       }
     }
   })
