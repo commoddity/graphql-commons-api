@@ -49,16 +49,9 @@ const splitEvents = async (array) => {
       title: eventTitle,
       publication_date: formatDate(arrayItem.pubDate)
     };
-    // Returns true if event has already been saved to eventsArray this update
-    const eventExistsInArray = eventsArray.some(
-      (savedEvent) =>
-        savedEvent.code === event.code &&
-        savedEvent.title === event.title &&
-        savedEvent.publication_date === event.publication_date
-    );
     // Returns true if event for bill has already been saved to database in a previous update
     const eventExistsInDb = await queryIfEventExists(billCode, eventTitle);
-    if (!eventExistsInArray && !eventExistsInDb) {
+    if (!eventExistsInDb) {
       eventsArray.push(event);
       console.log(
         `Successfully fetched ${event.title} for Bill ${event.bill_code} from LEGISinfo server ...`
