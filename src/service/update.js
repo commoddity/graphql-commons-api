@@ -52,11 +52,17 @@ const updateSummaryUrls = async (url) => {
         'code',
         summary.code
       );
-      billExistsInDatabase &&
-        (await queryUpdateSummaryUrl(summary.code, summary.url));
-      console.log(
-        `Legislative summary published for Bill ${summary.code}. Summary URL added ...`
+      const summaryUrlExistsInDatabase = await queryIfRowExists(
+        'bills',
+        'summary_url',
+        summary.url
       );
+      if (billExistsInDatabase && !summaryUrlExistsInDatabase) {
+        await queryUpdateSummaryUrl(summary.code, summary.url);
+        console.log(
+          `Legislative summary published for Bill ${summary.code}. Summary URL added ...`
+        );
+      }
     } catch (err) {
       console.error(
         `An error occurred while adding a summary URL to Bill ${summary.code}: ${err}`

@@ -1,7 +1,5 @@
 // Load in .env variables
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
+require('dotenv').config();
 
 //Import server/graphql dependencies
 const graphql = require('graphql');
@@ -9,11 +7,14 @@ const express = require('express');
 const session = require('express-session');
 const { ApolloServer } = require('apollo-server-express');
 const { environment, serverConf } = require('./config');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 
 // Import dependencies for user authentication
 const passport = require('passport');
 const { GraphQLLocalStrategy, buildContext } = require('graphql-passport');
 const crypto = require('crypto');
+const uuid = require('node-uuid');
 
 // Import schema information from graphql folder
 const { GraphQLSchema } = graphql;
@@ -47,22 +48,39 @@ passport.use(
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
+  console.log(`User successfully serialized with ID: ${user.id}.`);
 });
 
 passport.deserializeUser(async (id, done) => {
-  const query = 'SELECT id, email, password FROM users;';
+  console.log('TEST DESERIALIZE');
+  const query = 'SELECT id FROM users;';
   const users = await db.query(query);
   const matchingUser = users.find((user) => user.id === id);
   done(null, matchingUser);
+  console.log(`User successfully deserialized with ID: ${id}`);
 });
 
 // Create an express server
 const app = express();
+app.use(bodyParser.json());
+
+// Setup CORS options
+const corsOptions = {
+  origin: process.env.COMMONS_FRONT_END,
+  credentials: true
+};
+app.use(cors(corsOptions));
 
 // Define new session params
 app.use(
   session({
-    genid: (req) => crypto.randomBytes(16).toString('hex'),
+    genid: function(req) {
+      return crypto
+        .createHash('sha256')
+        .update(uuid.v1())
+        .update(crypto.randomBytes(256))
+        .digest('hex');
+    },
     secret: process.env.SESSION_SECRECT,
     resave: false,
     saveUninitialized: false,
@@ -84,11 +102,13 @@ const schema = new GraphQLSchema({
 const server = new ApolloServer({
   schema,
   playground: environment.match('development') ? true : false,
-  context: ({ req, res }) => buildContext({ req, res })
+  context: ({ req, res }) => {
+    return buildContext({ req, res });
+  }
 });
 const path = '/api';
 
-server.applyMiddleware({ app, path });
+server.applyMiddleware({ app, path, cors: false });
 
 // Server launch code
 app.listen(serverConf.SERVER_PORT, () =>

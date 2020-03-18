@@ -21,7 +21,7 @@ const splitBills = async (array) => {
       full_text_url: undefined,
       passed: null
     };
-    // Returns true if bill already has been saved to billsArray this update
+    // Returns true if bill has already been saved to billsArray this update
     const billExistsInArray = billsArray.some(
       (savedBill) => savedBill.code === bill.code
     );
@@ -32,8 +32,6 @@ const splitBills = async (array) => {
         `Successfuly fetched Bill ${bill.code} from LEGISinfo server ...`
       );
       billsArray.push(bill);
-    } else if (billExistsinDb) {
-      console.log(`Bill ${bill.code} already exists. Skipping ...`);
     }
   }
   return billsArray;
@@ -52,15 +50,11 @@ const splitEvents = async (array) => {
       publication_date: formatDate(arrayItem.pubDate)
     };
     // Returns true if event for bill has already been saved to database in a previous update
-    const eventExists = await queryIfEventExists(billCode, eventTitle);
-    if (!eventExists) {
+    const eventExistsInDb = await queryIfEventExists(billCode, eventTitle);
+    if (!eventExistsInDb) {
       eventsArray.push(event);
       console.log(
         `Successfully fetched ${event.title} for Bill ${event.bill_code} from LEGISinfo server ...`
-      );
-    } else {
-      console.log(
-        `${event.title} for Bill ${event.bill_code} already exists. Skipping ...`
       );
     }
   }
@@ -72,20 +66,16 @@ const splitEvents = async (array) => {
 const splitSummaries = (array) => {
   const summariesArray = [];
   array.forEach((summary) => {
-    const summaryBillCode = summary.title.includes(
-      'Legislative Summary Published for '
-    )
-      ? summary.title
-          .split('Legislative Summary Published for ')[1]
-          .split(',')[0]
-      : summary.title
-          .split('Legislative Short Summary Published for ')[1]
-          .split(',')[0];
-    const summaryObject = {
-      code: summaryBillCode,
-      url: summary.link
-    };
-    summariesArray.push(summaryObject);
+    if (summary.title.includes('Legislative Summary Published for ')) {
+      const summaryBillCode = summary.title
+        .split('Legislative Summary Published for ')[1]
+        .split(',')[0];
+      const summaryObject = {
+        code: summaryBillCode,
+        url: summary.link
+      };
+      summariesArray.push(summaryObject);
+    }
   });
   return summariesArray;
 };

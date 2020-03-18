@@ -10,6 +10,7 @@ const {
   GraphQLBoolean
 } = graphql;
 const { DateScalar } = require('./scalars.js');
+const { NotificationEnumType } = require('./enums.js');
 const { GraphQLDateTime } = graphqldate;
 
 //GraphQL types are defined below
@@ -42,7 +43,7 @@ const ParliamentarySessionType = new GraphQLObjectType({
   type: 'Query',
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
-    parliament: {
+    parliament_id: {
       type: ParliamentType,
       sqlColumn: 'parliament_id',
       sqlJoin: (parliamentarySessionTable, parliamentTable, args) =>
@@ -72,7 +73,7 @@ const BillType = new GraphQLObjectType({
   type: 'Query',
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLInt), sqlColumn: 'id' },
-    parliamentary_session: {
+    parliamentary_session_id: {
       type: ParliamentarySessionType,
       sqlColumn: 'parliamentary_session_id',
       sqlJoin: (billTable, parliamentarySessionTable, args) =>
@@ -211,10 +212,13 @@ const UserType = new GraphQLObjectType({
     email: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'email' },
     phone_number: { type: GraphQLInt, sqlColumn: 'phone_number' },
     email_notification: {
-      type: GraphQLString,
+      type: NotificationEnumType,
       sqlColumn: 'email_notification'
     },
-    sms_notification: { type: GraphQLString, sqlColumn: 'sms_notification' },
+    sms_notification: {
+      type: NotificationEnumType,
+      sqlColumn: 'sms_notification'
+    },
     active: { type: GraphQLBoolean, sqlColumn: 'active' },
     created_at: { type: GraphQLDateTime, sqlColumn: 'created_at' },
     bills: {

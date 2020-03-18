@@ -16,6 +16,7 @@ const {
   GraphQLBoolean
 } = graphql;
 const { DateScalar } = require('./scalars.js');
+const { NotificationEnumType } = require('./enums.js');
 const { GraphQLDateTime } = graphqldate;
 
 const { db } = require('../../src/pgAdaptor');
@@ -161,8 +162,8 @@ const RootMutation = new GraphQLObjectType({
         password: { type: GraphQLNonNull(GraphQLString) },
         email: { type: GraphQLNonNull(GraphQLString) },
         phone_number: { type: GraphQLInt },
-        email_notification: { type: GraphQLString },
-        sms_notification: { type: GraphQLString },
+        email_notification: { type: NotificationEnumType },
+        sms_notification: { type: NotificationEnumType },
         active: { type: GraphQLBoolean },
         created_at: { type: GraphQLDateTime }
       },
@@ -183,7 +184,7 @@ const RootMutation = new GraphQLObjectType({
             args.phone_number,
             args.email_notification,
             args.sms_notification,
-            args.active
+            true
           ];
           const response = await db.query(query, values);
           console.log(
@@ -193,6 +194,27 @@ const RootMutation = new GraphQLObjectType({
         } catch (err) {
           console.error(`Failed to insert new user. ${err}`);
           throw new Error(`Failed to insert new user. ${err}`);
+        }
+      }
+    },
+    deleteUser: {
+      type: UserType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLInt) }
+      },
+      resolve: async (parent, args, context, resolveInfo) => {
+        try {
+          const query = `DELETE FROM users 
+                        WHERE (id = $1)`;
+          const values = [args.id];
+          const response = await db.query(query, values);
+          console.log(
+            `Successfully deleted user with id ${args.id} from database.`
+          );
+          return response[0];
+        } catch (err) {
+          console.error(`Failed to delete user. ${err}`);
+          throw new Error(`Failed to delete user. ${err}`);
         }
       }
     },
@@ -259,7 +281,7 @@ const RootMutation = new GraphQLObjectType({
         }
       }
     },
-    removeUserBill: {
+    deleteUserBill: {
       type: UserBillType,
       args: {
         user_id: { type: GraphQLInt },
@@ -345,7 +367,8 @@ const RootMutation = new GraphQLObjectType({
               password
             });
             await context.login(user);
-            console.log(`User successfully logged in using email: ${email}`);
+            console.log('USER ID', context.req.session.passport.user);
+            console.log('USER OBJECT', context.req.user);
             return user;
           } catch (err) {
             console.error(`Failed to log in user with email: ${email}. ${err}`);
@@ -358,13 +381,11 @@ const RootMutation = new GraphQLObjectType({
     },
     logoutUser: {
       type: UserType,
-      args: {
-        id: { type: GraphQLNonNull(GraphQLInt) }
-      },
       resolve: async (parent, args, context, resolveInfo) => {
         try {
           await context.logout();
-          console.log(`Successfully logged out user with id ${args.id}`);
+          await context.req.session.destroy();
+          console.log(`Successfuly logged out user.`);
         } catch (err) {
           console.error(`Failed to log out user. ${err}`);
           throw new Error(`Failed to log out user. ${err}`);
