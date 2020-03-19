@@ -22,8 +22,8 @@ const writeToDatabaseCaller = async (legisInfoUrl, summariesUrl) => {
     console.log(`Saved ${eventsArray.length} events to database ...\n`);
     await updateSummaryUrls(summariesUrl);
     console.log(`Done checking for legislative summaries ...\n`);
-    // await writeBillCategoriesToDatabase(formattedBillsArray);
-    // console.log(`Finished Updating Database at: ${new Date()} - Success!`);
+    await writeBillCategoriesToDatabase(formattedBillsArray);
+    console.log(`Finished Updating Database at: ${new Date()} - Success!`);
   } catch (err) {
     console.error(
       `An error occurred while writing bills and events to database: ${err}`

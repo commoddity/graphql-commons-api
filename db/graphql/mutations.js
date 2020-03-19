@@ -2,11 +2,7 @@ require('dotenv/config');
 const graphql = require('graphql');
 const graphqldate = require('graphql-iso-date');
 
-// DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
-const {
-  hashPassword,
-  compareHashPassword
-} = require('../../src/helpers/hashHelpers');
+const { hashPassword } = require('../../src/helpers/hashHelpers');
 
 const {
   GraphQLObjectType,
@@ -28,7 +24,8 @@ const {
   UserType,
   BillCategoryType,
   UserBillType,
-  UserCategoryType
+  UserCategoryType,
+  AuthTokenType
 } = require('./types');
 
 // MutationRoot stores mutations for creating/updating data in the database
@@ -162,6 +159,7 @@ const RootMutation = new GraphQLObjectType({
         password: { type: GraphQLNonNull(GraphQLString) },
         email: { type: GraphQLNonNull(GraphQLString) },
         phone_number: { type: GraphQLInt },
+        postal_code: { type: GraphQLString },
         email_notification: { type: NotificationEnumType },
         sms_notification: { type: NotificationEnumType },
         active: { type: GraphQLBoolean },
@@ -169,19 +167,18 @@ const RootMutation = new GraphQLObjectType({
       },
       resolve: async (parent, args, context, resolveInfo) => {
         try {
-          // DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
           const hashedPassword = await hashPassword(args.password);
-          const query = `INSERT INTO users (first_name, last_name, username, password, email, phone_number, email_notification, sms_notification, active, created_at) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, (to_timestamp(${Date.now()} / 1000.0))) 
+          const query = `INSERT INTO users (first_name, last_name, username, password, email, phone_number, postal_code, email_notification, sms_notification, active, created_at) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, (to_timestamp(${Date.now()} / 1000.0))) 
             RETURNING *`;
           const values = [
             args.first_name,
             args.last_name,
             args.username,
-            // DEV NOTE ---> CHANGE BACK TO args.password ONCE FRONT END BCRYPT HASHING IS SET UP
             hashedPassword,
             args.email,
             args.phone_number,
+            args.postal_code,
             args.email_notification,
             args.sms_notification,
             true
@@ -352,30 +349,15 @@ const RootMutation = new GraphQLObjectType({
       },
       resolve: async (parent, args, context, resolveInfo) => {
         const { email, password } = args;
-        // DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
-        const hashedPassword = await hashPassword(password);
-        const matchPassword = await compareHashPassword(
-          password,
-          hashedPassword
-        );
-        console.log(`DEV ---> PASSWORD MATCH IS ${matchPassword}`);
-        // DEV NOTE ---> DELETE IF STATEMENT ONCE FRONT END BCRYPT HASHING IS SET UP
-        if (matchPassword) {
-          try {
-            const { user } = await context.authenticate('graphql-local', {
-              email,
-              password
-            });
-            await context.login(user);
-            console.log('USER ID', context.req.session.passport.user);
-            console.log('USER OBJECT', context.req.user);
-            return user;
-          } catch (err) {
-            console.error(`Failed to log in user with email: ${email}. ${err}`);
-            throw new Error(
-              `Failed to log in user with email: ${email}. ${err}`
-            );
-          }
+        try {
+          const { user } = await context.authenticate('graphql-local', {
+            email,
+            password
+          });
+          await context.login(user);
+          return { id: user.id };
+        } catch (err) {
+          return err;
         }
       }
     },

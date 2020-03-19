@@ -211,6 +211,7 @@ const UserType = new GraphQLObjectType({
     password: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'password' },
     email: { type: GraphQLNonNull(GraphQLString), sqlColumn: 'email' },
     phone_number: { type: GraphQLInt, sqlColumn: 'phone_number' },
+    postal_code: { type: GraphQLInt, sqlColumn: 'postal_code' },
     email_notification: {
       type: NotificationEnumType,
       sqlColumn: 'email_notification'
@@ -297,6 +298,14 @@ UserCategoryType._typeConfig = {
   sqlTable: 'user_categories'
 };
 
+const AuthTokenType = new GraphQLObjectType({
+  name: 'AuthToken',
+  fields: () => ({
+    user: { type: UserType },
+    value: { type: GraphQLNonNull(GraphQLString) }
+  })
+});
+
 exports.ParliamentType = ParliamentType;
 exports.ParliamentarySessionType = ParliamentarySessionType;
 exports.BillType = BillType;
@@ -306,3 +315,4 @@ exports.UserType = UserType;
 exports.BillCategoryType = BillCategoryType;
 exports.UserBillType = UserBillType;
 exports.UserCategoryType = UserCategoryType;
+exports.AuthTokenType = AuthTokenType;
