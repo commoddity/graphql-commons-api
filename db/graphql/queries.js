@@ -510,6 +510,10 @@ const RootQuery = new GraphQLObjectType({
           whereClause.push(`${userTable}.email = ?`);
           values.push(args.email);
         }
+        if (args.postal_code) {
+          whereClause.push(`${userTable}.postal_code = ?`);
+          values.push(args.postal_code);
+        }
         if (args.phone_number) {
           whereClause.push(`${userTable}.phone_number = ?`);
           values.push(args.phone_number);

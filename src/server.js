@@ -7,7 +7,6 @@ const express = require('express');
 const session = require('express-session');
 const { ApolloServer } = require('apollo-server-express');
 const { environment, serverConf } = require('./config');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 
 // Import dependencies for user authentication
@@ -22,47 +21,42 @@ const { query } = require('../db/graphql/queries');
 const { mutation } = require('../db/graphql/mutations');
 const { type } = require('../db/graphql/types');
 
-// Import PostgreSQL connection config
+// Import PostgreSQL connection for user authentication
 const { db } = require('./pgAdaptor');
 
-// DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
-const { hashPassword, compareHashPassword } = require('./helpers/hashHelpers');
-// DELETE TO HERE
+// Bcrypt helper for hashed password authentication
+const { compareHashPassword } = require('./helpers/hashHelpers');
 
 // Define passport authentication strategy
 passport.use(
   new GraphQLLocalStrategy(async (email, password, done) => {
-    const query = 'SELECT id, email, password FROM users;';
-    const users = await db.query(query);
-    // DEV NOTE ---> DELETE FOLLOWING ONCE FRONT END BCRYPT HASHING IS SET UP
-    const hashedPassword = await hashPassword(password);
-    const matchPassword = await compareHashPassword(password, hashedPassword);
-    // DELETE TO HERE AND CHANGE matchPassword TO password === user.password BELOW
-    const matchingUser = users.find(
-      (user) => email === user.email && matchPassword
-    );
-    const error = matchingUser ? null : new Error('No matching user found.');
-    done(error, matchingUser);
+    const query = 'SELECT id, email, password FROM users WHERE email = $1';
+    const [user] = await db.query(query, [email]);
+    if (!user) {
+      const error = new Error(`No user found for ${email}.`);
+      done(error, false);
+    } else {
+      const matchPassword = await compareHashPassword(password, user.password);
+      const error = matchPassword
+        ? null
+        : new Error(`Incorrect password for ${email}.`);
+      matchPassword ? done(error, user) : done(error, false);
+    }
   })
 );
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
-  console.log(`User successfully serialized with ID: ${user.id}.`);
 });
 
 passport.deserializeUser(async (id, done) => {
-  console.log('TEST DESERIALIZE');
-  const query = 'SELECT id FROM users;';
-  const users = await db.query(query);
-  const matchingUser = users.find((user) => user.id === id);
-  done(null, matchingUser);
-  console.log(`User successfully deserialized with ID: ${id}`);
+  const query = 'SELECT id FROM users WHERE id = $1';
+  const [user] = await db.query(query, [id]);
+  done(null, user);
 });
 
 // Create an express server
 const app = express();
-app.use(bodyParser.json());
 
 // Setup CORS options
 const corsOptions = {
@@ -84,7 +78,11 @@ app.use(
     secret: process.env.SESSION_SECRECT,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: true }
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1000 * 60 * 60 * 24 * 7
+    }
   })
 );
 
@@ -102,9 +100,7 @@ const schema = new GraphQLSchema({
 const server = new ApolloServer({
   schema,
   playground: environment.match('development') ? true : false,
-  context: ({ req, res }) => {
-    return buildContext({ req, res });
-  }
+  context: ({ req, res }) => buildContext({ req, res })
 });
 const path = '/api';
 
