@@ -37,7 +37,7 @@
     "graphql-request": "^1.8.2",
     "graphql-tag": "^2.10.3",
     "join-monster": "^2.1.1",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "node-env-run": "^3.0.2",
     "node-uuid": "^1.4.8",
     "passport": "^0.4.1",
